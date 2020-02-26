@@ -7,6 +7,15 @@
 #
 [boj11004]:https://boj.co.kr/11004
 
-# Python Environment
+# Python
      import sys
      sys.setrecursionlimit(10**6)     #Because Python recursive default = 1000
+#
+# C++ 
+          #include <iostream>
+          int main() {
+          cin.tie(NULL);
+          cin.sync_with_stdio(false);
+          }
+          
+#
