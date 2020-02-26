@@ -14,8 +14,8 @@
 # C++ 
           #include <iostream>
           int main() {
-          cin.tie(NULL);
-          cin.sync_with_stdio(false);
+            cin.tie(NULL);
+            cin.sync_with_stdio(false);
           }
           
 #
