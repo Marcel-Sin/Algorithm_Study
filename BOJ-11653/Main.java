@@ -20,7 +20,6 @@ public class Main {
 				}
 			}
 		}
-		if(number == 1) io.write(1+"\n");
 		io.close();
 	}
 
