@@ -29,7 +29,7 @@ public class Main {
 			sum += c;
 		}
 		if (sum % 3 == 0 && zeroCheck == true) {
-			QuickSort(chars,0,chars.length-1);
+			MergeSort(chars,0,chars.length-1,new char[chars.length]);
 			StringBuilder sb = new StringBuilder(new String(chars));
 			io.write(sb.toString());
 		}
@@ -37,35 +37,32 @@ public class Main {
 		io.close();
 	}
 	
-	static void QuickSort(char[] arr, int start, int end) {
+	static void MergeSort(char[] arr, int start, int end, char[] temp) {
+		//Base Condition
 		if(start >= end) return;
-		int mid = Partition(arr,start,end);
-		QuickSort(arr,start,mid-1);
-		QuickSort(arr,mid+1,end);
-	}
-	
-	static int Partition(char[] arr, int start, int end) {
-		int pivot = (start+end)/2;
-		char P = arr[pivot];
-		Swap(arr,pivot,end);
-		int SI = start;
-		for(int i = start; i < end; i++) {
-			if(arr[i] > P) {
-				Swap(arr,i,SI);
-				SI++;
-			}
+		
+		//Divide
+		int mid = (start+end)/2;
+		
+		//Conquer
+		MergeSort(arr,start,mid,temp);
+		MergeSort(arr,mid+1,end,temp);
+		
+		
+		//Combine
+		int i = start, j = mid+1;
+		for(int k = start; k <= end; k++) {
+			if(i > mid) temp[k] = arr[j++];
+			else if(j > end) temp[k] = arr[i++];
+			else if(arr[i] > arr[j]) temp[k] = arr[i++];
+			else temp[k] = arr[j++];
 		}
-		Swap(arr,SI,end);
-		return SI;
-	}
-
-	static void Swap(char[] arr, int a, int b) {
-		char temp = arr[a];
-		arr[a] = arr[b];
-		arr[b] = temp;
+		
+		//Copy
+		for(int x = start; x <= end; x++) arr[x] = temp[x];
 	}
 	
-
+	
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
