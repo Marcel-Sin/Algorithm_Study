@@ -29,17 +29,43 @@ public class Main {
 			sum += c;
 		}
 		if (sum % 3 == 0 && zeroCheck == true) {
-			Arrays.sort(chars);
+			QuickSort(chars,0,chars.length-1);
 			StringBuilder sb = new StringBuilder(new String(chars));
-			io.write(sb.reverse().toString());
+			io.write(sb.toString());
 		}
 		else System.out.println(-1);
 		io.close();
 	}
 	
+	static void QuickSort(char[] arr, int start, int end) {
+		if(start >= end) return;
+		int mid = Partition(arr,start,end);
+		QuickSort(arr,start,mid-1);
+		QuickSort(arr,mid+1,end);
+	}
 	
+	static int Partition(char[] arr, int start, int end) {
+		int pivot = (start+end)/2;
+		char P = arr[pivot];
+		Swap(arr,pivot,end);
+		int SI = start;
+		for(int i = start; i < end; i++) {
+			if(arr[i] > P) {
+				Swap(arr,i,SI);
+				SI++;
+			}
+		}
+		Swap(arr,SI,end);
+		return SI;
+	}
+
+	static void Swap(char[] arr, int a, int b) {
+		char temp = arr[a];
+		arr[a] = arr[b];
+		arr[b] = temp;
+	}
 	
-	
+
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
