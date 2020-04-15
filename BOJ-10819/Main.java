@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -20,60 +21,83 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		caseCount = io.inputInt();
 		arr = new int[caseCount];
+		int[] order = new int[caseCount];
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		for(int i = 0 ; i < caseCount; i++) arr[i] = nextInt(stk);
+		for(int i = 0 ; i < caseCount; i++) {
+			arr[i] = nextInt(stk);
+			order[i] = i;
+		}
 		
-		Permutation P = new Permutation(0, new int[caseCount], new boolean[caseCount]);
-		DFS(P);
+		while(true) {
+			Sum(order);
+			if(Next_Permutation(order) == false) break;
+		}
 		System.out.println(ans);
 	}	
 
-	static void Sum(Permutation p) {
+	static boolean Next_Permutation(int[] a) {
+		if(a.length < 2) return false;
+		int len = a.length;
+		int ii,i = len-1,j = len;
+		
+		while(true) {
+			ii = i;
+			i--;
+			if(a[i] < a[ii]) {
+				while(a[i] >= a[--j]);
+				Swap(a,i,j);
+				PartialReverse(a, ii, len-1);
+				return true;
+			}
+			if(i == 0) return false;
+		}
+	}
+	static boolean Prev_Permutation(int[] a) {
+		if(a.length < 2) return false;
+		int len = a.length;
+		int ii,i = len-1,j = len;
+		
+		while(true) {
+			ii = i;
+			i--;
+			if(a[i] >= a[ii]) {
+				while(a[i] < a[--j]);
+				Swap(a,i,j);
+				PartialReverse(a, ii, len-1);
+				return true;
+			}
+			if(i == 0) return false;
+		}
+	}
+	
+	static void Sum(int[] p) {
 		int result = 0;
 		
 		for(int i = 0; i < caseCount-1; i++) {
-			result += Math.abs(arr[p.order[i]] - arr[p.order[i+1]]);
+			result += Math.abs(arr[p[i]] - arr[p[i+1]]);
 		}
 		if(result > ans) ans = result;
 		
-	}
-	
-	static void DFS(Permutation p) {
-		if(p.count == caseCount) {
-			Sum(p);
-			return;
-		}
-		boolean[] check = p.check;
-		for(int i = 0; i < p.check.length; i++) {
-			if(check[i] == false) {
-				int[] temp1 = p.order.clone();
-				temp1[p.count] = i;
-				boolean[] temp2 = p.check.clone();
-				temp2[i] = true;
-				Permutation nextP = new Permutation(p.count+1, temp1, temp2);
-				DFS(nextP);
-			}
-		}
 	}
 	
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
 	
-	static class Permutation {
-		int count; 
-		int[] order;
-		boolean[] check;
-		
-		public Permutation(int count, int[] order, boolean[] check) {
-			super();
-			this.count = count;
-			this.order = order;
-			this.check = check;
+	static void Swap(int[] a, int i , int j) {
+		int temp = a[i];
+		a[i] = a[j];
+		a[j] =temp;
+	}	
+	static void PartialReverse(int[] a, int start, int end) {
+		int temp;
+		while(end > start) {
+			temp = a[start];
+			a[start++] = a[end];
+			a[end--] = temp;
 		}
-		
 	}
-	
+
 }
 
 
