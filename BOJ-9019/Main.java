@@ -12,18 +12,24 @@ import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static StringBuilder[] check;
+	static char[] check = new char[10000];
+	static int[] trace = new int[10000];
 	static int A,target;
 	public static void main(String[] args) throws IOException {
 		int total = io.inputInt();
+		
 		for(int i = 0 ; i < total; i++) {
-			check = new StringBuilder[10000];
+			Arrays.fill(check, (char)0);
+			Arrays.fill(trace, -1);
 			StringTokenizer stk = new StringTokenizer(io.inputStr());
 			A = nextInt(stk);
 			target = nextInt(stk);
 			BFS(A);
-			System.out.println(check[target].toString());
+			Print(target);
+			io.bw.flush();
+			System.out.println();
 		}
+		
 		
 	
 	}	
@@ -51,55 +57,50 @@ public class Main {
 
 	
 	static void BFS(int start) {
-		Queue<DSLR> queue = new LinkedList<DSLR>();
-		check[start] = new StringBuilder();
-		queue.add(new DSLR(start,""));
+		Queue<Integer> queue = new LinkedList<Integer>();
+		check[start] = 0;
+		trace[start] = start;
+		queue.add(start);
 		
 		while(queue.isEmpty() == false) {
-			DSLR parent = queue.poll();
-			if(parent.value == target) {
-				check[target] = new StringBuilder(parent.command.toString());
+			int parent = queue.poll();
+			if(parent == target) {
 				break;
 			}
-			int n1 = Double(parent.value);
-			int n2 = Sub(parent.value);
-			int n3 = Left(parent.value);
-			int n4 = Right(parent.value);
-			if(check[n1] == null) {
-				DSLR temp = new DSLR(n1,parent.command.toString());
-				temp.command.append('D');
-				check[n1] = new StringBuilder(temp.command.toString());
-				queue.add(temp);
+			int n1 = Double(parent);
+			int n2 = Sub(parent);
+			int n3 = Left(parent);
+			int n4 = Right(parent);
+			if(trace[n1] == -1) {
+				check[n1] = 'D';
+				trace[n1] = parent;
+				queue.add(n1);
 			}
-			if(check[n2] == null) {
-				DSLR temp = new DSLR(n2,parent.command.toString());
-				temp.command.append('S');
-				check[n2] = new StringBuilder(temp.command.toString());
-				queue.add(temp);
+			if(trace[n2] == -1) {
+				check[n2] = 'S';
+				trace[n2] = parent;
+				queue.add(n2);
 			}
-			if(check[n3] == null) {
-				DSLR temp = new DSLR(n3,parent.command.toString());
-				temp.command.append('L');
-				check[n3] = new StringBuilder(temp.command.toString());
-				queue.add(temp);
+			if(trace[n3] == -1) {
+				check[n3] = 'L';
+				trace[n3] = parent;
+				queue.add(n3);
 			}
-			if(check[n4] == null) {
-				DSLR temp = new DSLR(n4,parent.command.toString());
-				temp.command.append('R');
-				check[n4] = new StringBuilder(temp.command.toString());
-				queue.add(temp);
+			if(trace[n4] == -1) {
+				check[n4] = 'R';
+				trace[n4] = parent;
+				queue.add(n4);
 			}
+			
+			
 		}
 	}
 	
 	
-	static class DSLR {
-		int value;
-		StringBuilder command;
-		public DSLR(int value, String str) {
-			super();
-			this.value = value;
-			this.command = new StringBuilder(str);
+	static void Print(int number) throws IOException{
+		if(number != trace[number]) {
+			Print(trace[number]);
+			io.bw.write(check[number]);
 		}
 	}
 	
