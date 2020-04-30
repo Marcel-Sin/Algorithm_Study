@@ -13,6 +13,10 @@ public class Main {
 	static IO_Manager io = new IO_Manager();
 	static int[][] MAP;
 	static int SIZE;
+	static boolean[][] isBox;
+	static boolean[][] isRow;
+	static boolean[][] isCol;
+	
 	static State state;
 	public static void main(String[] args) throws IOException {
 		Initializing();
@@ -21,6 +25,10 @@ public class Main {
 	
 	static boolean Initializing() throws IOException{
 		MAP = new int[9][9];
+		isRow = new boolean[9][];
+		isCol = new boolean[9][];
+		isBox = new boolean[9][];
+		
 		SIZE = 0;
 		ArrayList<Cord> cords = new ArrayList<Cord>(); 
 		for(int i = 0; i < 9; i++) {
@@ -33,6 +41,21 @@ public class Main {
 				}
 			}
 		}
+		for(int x = 0; x < 9; x++) {
+			isBox[x] = new boolean[10];
+			isCol[x] = new boolean[10];
+			isRow[x] = new boolean[10];
+			Cord cur = BoxToCord(x);
+			for(int i = cur.row; i < cur.row+3; i++) {
+				for(int j = cur.col; j < cur.col+3; j++) {
+					isBox[x][MAP[i][j]] = true;
+				}
+			}
+			for(int j = 0; j < 9; j++) isRow[x][MAP[x][j]] = true;
+			for(int i = 0; i < 9; i++) isCol[x][MAP[i][x]] = true;
+		}
+		
+		
 		Cord[] cordlist = new Cord[SIZE];
 		for(int i = 0; i < cords.size(); i++) {
 			cords.get(i).CreatePlist();
@@ -46,9 +69,39 @@ public class Main {
 			}
 		});
 		state = new State(cordlist,0);
+
 		return true;
 	}
 
+	static Cord BoxToCord(int boxNum) {
+		switch(boxNum) {
+			case 0:
+				return new Cord(0,0);
+			case 1:
+				return new Cord(0,3);
+			case 2:
+				return new Cord(0,6);
+			case 3:
+				return new Cord(3,0);
+			case 4:
+				return new Cord(3,3);
+			case 5:
+				return new Cord(3,6);
+			case 6:
+				return new Cord(6,0);
+			case 7:
+				return new Cord(6,3);
+			case 8:
+				return new Cord(6,6);
+		}
+		return null;
+	}
+	static int CordToBox(Cord boxCord) {
+		int r = (boxCord.row / 3)*3;
+		int c = boxCord.col / 3;
+		return r+c;
+	}
+	
 	static void DFS(State s) {
 		if(s.stopRecursion == true) return;
 		if(s.sp == SIZE) {
@@ -83,50 +136,38 @@ public class Main {
 		
 		public void Select(int idx) {
 			Cord cur = GetCord();
-			MAP[cur.row][cur.col] = cur.plist.get(idx);
+			int N = cur.plist.get(idx);
+			MAP[cur.row][cur.col] = N;
+			isBox[cur.boxNum][N] = true;
+			isRow[cur.row][N] = true;
+			isCol[cur.col][N] = true;
 			sp++;
 		}
 		
 		public void Deselect() {
 			sp--;
 			Cord cur = GetCord();
-			MAP[cur.row][cur.col] = 0;
+			int N = MAP[cur.row][cur.col];
+			isBox[cur.boxNum][N] = false;
+			isRow[cur.row][N] = false;
+			isCol[cur.col][N] = false;
 		}
 	}
 	
-	
 	static class Cord{
-		public int row,col;
+		public int row,col,boxNum;
 		public ArrayList<Integer> plist;
 		public Cord(int row, int col) {
 			super();
 			this.row = row;
 			this.col = col;
+			this.boxNum = CordToBox(this);
 			plist = new ArrayList<Integer>();
 		}
 		public void CreatePlist() {
-			boolean[] check = new boolean[10];
-			int limitR,limitC,startR,startC;
-			//3*3 Check
-			startR = (row/3)*3;
-			startC = (col/3)*3;
-			limitR = startR+3;
-			limitC = startC+3;
-			
-			for (int i = startR; i < limitR; i++) {
-				for (int j = startC; j < limitC; j++) {
-					check[MAP[i][j]] = true;
-				}
-			}
-			
-			// Row Check
-			for(int i = 0; i < 9; i++) {
-				check[MAP[i][col]] = true;
-			}
-			// Col Check
-			for(int j = 0; j < 9; j++) {
-				check[MAP[row][j]] = true;
-			}
+			boolean[] check = isBox[boxNum].clone();
+			for(int n = 1; n <= 9; n++) if(isRow[row][n] == true) check[n] = true;
+			for(int n = 1; n <= 9; n++) if(isCol[col][n] == true) check[n] = true;
 			
 			// plist Creation
 			for(int i = 1; i <= 9; i++) {
@@ -134,36 +175,17 @@ public class Main {
 			}
 			
 		}
-		
 		public boolean CheckPos(int idx) {
 			int N = plist.get(idx);
-			int limitR,limitC,startR,startC;
-			//3*3 Check
-			startR = (row/3)*3;
-			startC = (col/3)*3;
-			limitR = startR+3;
-			limitC = startC+3;
-			for (int i = startR; i < limitR; i++) {
-				for (int j = startC; j < limitC; j++) {
-					if(MAP[i][j] == N && (row == i && col == j) == false) return false;
-				}
-			}
-			// Row Check
-			for(int i = 0; i < 9; i++) {
-				if(MAP[i][col] == N && row != i) return false;
-			}
-			// Col Check
-			for(int j = 0; j < 9; j++) {
-				if(MAP[row][j] == N && col != j) return false;
-			}
+			if(isBox[boxNum][N] == true) return false;
+			if(isRow[row][N] == true) return false;
+			if(isCol[col][N] == true) return false;
 			return true;
 		}
 
 		
 	}  // MAIN END Point
 	
-	
-
 	static void Display() {
 		for(int i = 0; i < 9; i++) {
 			for(int j = 0; j < 9; j++) {
@@ -176,25 +198,7 @@ public class Main {
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
-	}
-	
 }
-
-
-
-
 
 
 // ************************************** //
