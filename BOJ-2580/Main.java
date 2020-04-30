@@ -61,13 +61,6 @@ public class Main {
 			cords.get(i).CreatePlist();
 			cordlist[i] = cords.get(i);
 		}
-		Arrays.sort(cordlist,new Comparator<Cord>() {
-			@Override
-			public int compare(Cord o1, Cord o2) {
-				if(o1.plist.size() == o2.plist.size() ) return 0;
-				else return (o1.plist.size() < o2.plist.size() )? -1:1;
-			}
-		});
 		state = new State(cordlist,0);
 
 		return true;
