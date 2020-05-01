@@ -21,14 +21,18 @@ public class Main {
 	}
 	
 	static void DFS(State s) {
+		if(s.stopRecur == true) return;
+		if(s.count == 26) {	
+			s.stopRecur = true;
+			return;
+		}
 		Coord cur = s.GetCoord();
 		if(cur == null) return;
 		Coord[] nextCoord = new Coord[4];
-		for(int i = 0; i < 4; i++) {
-			nextCoord[i] = cur.Add(DIR[i]);
-			if(nextCoord[i].row < 0 || nextCoord[i].col < 0 || nextCoord[i].row >= R || nextCoord[i].col >= C) nextCoord[i] = null;
-			else if (s.Check(MAP[nextCoord[i].row][nextCoord[i].col])) nextCoord[i] = null;
-		}
+		if(cur.row+1 < R && s.Check(MAP[cur.row+1][cur.col]) == false) nextCoord[0] = new Coord(cur.row+1,cur.col);
+		if(cur.col+1 < C && s.Check(MAP[cur.row][cur.col+1]) == false) nextCoord[1] = new Coord(cur.row,cur.col+1);
+		if(cur.row-1 >= 0 && s.Check(MAP[cur.row-1][cur.col]) == false) nextCoord[2] = new Coord(cur.row-1,cur.col);
+		if(cur.col-1 >= 0 && s.Check(MAP[cur.row][cur.col-1]) == false) nextCoord[3] = new Coord(cur.row,cur.col-1);
 		
 		for(int i = 0; i < 4; i++) {
 			if(nextCoord[i] != null) {
@@ -40,30 +44,31 @@ public class Main {
 	}
 	
 	static class State {
-		ArrayList<Coord> coordList;
+		Coord[] coordList;
 		int count;
 		boolean[] check;
+		boolean stopRecur;
 		
 		public State() {
-			coordList = new ArrayList<Main.Coord>();
+			coordList = new Coord[26];
 			check = new boolean[26];
 			count = 0;
+			stopRecur = false;
 		}
 		
 		public void Select(Coord co) {
 			char c = MAP[co.row][co.col];
-			coordList.add(co);
+			coordList[count] = co;
 			check[c-65] = true;
 			count++;
 			if(ANS < count) ANS = count;
 		}
 		
 		public void Deselect() {
-			int idx = coordList.size()-1;
-			Coord co = coordList.get(idx);
+			int idx = count-1;
+			Coord co = coordList[idx];
 			char c = MAP[co.row][co.col];
 			check[c-65] = false;
-			coordList.remove(idx);
 			count--;
 		}
 		
@@ -73,7 +78,7 @@ public class Main {
 		
 		public Coord GetCoord() {
 			if(count == 0) return null;
-			return coordList.get(count-1);
+			return coordList[count-1];
 		}
 	}
 	
@@ -95,11 +100,6 @@ public class Main {
 		C = nextInt(stk);
 		MAP = new char[R][];
 		for (int i = 0; i < R; i++) MAP[i] = io.inputStr().toCharArray();
-		DIR = new Coord[4];
-		DIR[0] = new Coord(0,1);
-		DIR[1] = new Coord(0,-1);
-		DIR[2] = new Coord(1,0);
-		DIR[3] = new Coord(-1,0);
 	}
 	
 	
