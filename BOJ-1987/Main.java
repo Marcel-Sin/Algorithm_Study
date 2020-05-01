@@ -11,86 +11,65 @@ public class Main {
 	static IO_Manager io = new IO_Manager();
 	static char[][] MAP;
 	static int R,C,ANS = 0;
-	static Coord[] DIR;
+	static State state = new State();
 	public static void main(String[] args) throws IOException {
 		Initializing();
-		State state = new State();
-		state.Select(new Coord(0,0));
-		DFS(state);
+		state.Select(0, 0);
+		DFS(state,0,0);
 		System.out.println(ANS);
 	}
 	
-	static void DFS(State s) {
-		if(s.stopRecur == true) return;
-		if(s.count == 26) {	
-			s.stopRecur = true;
-			return;
-		}
-		Coord cur = s.GetCoord();
-		if(cur == null) return;
-		Coord[] nextCoord = new Coord[4];
-		if(cur.row+1 < R && s.Check(MAP[cur.row+1][cur.col]) == false) nextCoord[0] = new Coord(cur.row+1,cur.col);
-		if(cur.col+1 < C && s.Check(MAP[cur.row][cur.col+1]) == false) nextCoord[1] = new Coord(cur.row,cur.col+1);
-		if(cur.row-1 >= 0 && s.Check(MAP[cur.row-1][cur.col]) == false) nextCoord[2] = new Coord(cur.row-1,cur.col);
-		if(cur.col-1 >= 0 && s.Check(MAP[cur.row][cur.col-1]) == false) nextCoord[3] = new Coord(cur.row,cur.col-1);
+	static void DFS(State s,int row, int col) {
+		if(ANS == 26) return;
 		
-		for(int i = 0; i < 4; i++) {
-			if(nextCoord[i] != null) {
-				s.Select(nextCoord[i]);
-				DFS(s);
-				s.Deselect();
-			}
+		int north = row-1, south = row+1, east = col+1, west = col-1;
+		if(south < R && s.Check(MAP[south][col]) == false) {
+			s.Select(south, col);
+			DFS(s,south,col);
+			s.Deselect(south, col);
 		}
+		if(east < C && s.Check(MAP[row][east]) == false) {
+			s.Select(row, east);
+			DFS(s,row,east);
+			s.Deselect(row, east);
+		}
+		if(north >= 0 && s.Check(MAP[north][col]) == false) {
+			s.Select(north, col);
+			DFS(s,north,col);
+			s.Deselect(north, col);
+		}
+		if(west >= 0 && s.Check(MAP[row][west]) == false) {
+			s.Select(row, west);
+			DFS(s,row,west);
+			s.Deselect(row, west);	
+		}
+		
 	}
 	
 	static class State {
-		Coord[] coordList;
 		int count;
 		boolean[] check;
-		boolean stopRecur;
 		
 		public State() {
-			coordList = new Coord[26];
 			check = new boolean[26];
 			count = 0;
-			stopRecur = false;
 		}
 		
-		public void Select(Coord co) {
-			char c = MAP[co.row][co.col];
-			coordList[count] = co;
-			check[c-65] = true;
+		public void Select(int r, int c) {
+			char ch = MAP[r][c];
+			check[ch-65] = true;
 			count++;
 			if(ANS < count) ANS = count;
 		}
 		
-		public void Deselect() {
-			int idx = count-1;
-			Coord co = coordList[idx];
-			char c = MAP[co.row][co.col];
-			check[c-65] = false;
+		public void Deselect(int r, int c) {
+			char ch = MAP[r][c];
+			check[ch-65] = false;
 			count--;
 		}
 		
 		public boolean Check(char c) {
 			return check[c-65];
-		}
-		
-		public Coord GetCoord() {
-			if(count == 0) return null;
-			return coordList[count-1];
-		}
-	}
-	
-	static class Coord {
-		public int row,col;
-		public Coord(int row, int col) {
-			this.row = row;
-			this.col = col;
-		}
-		
-		public Coord Add(Coord adder) {
-			return new Coord(this.row+adder.row,this.col+adder.col);
 		}
 	}
 	
