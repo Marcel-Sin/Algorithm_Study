@@ -22,15 +22,16 @@ public class Main {
 	}
 	
 	static void DFS(int idx,int sum) {
-		if(sum == TARGET) {
-			COUNT++;
-			return;
+		while(true) {
+			if(sum == TARGET) {
+				COUNT++;
+				break;
+			}
+			idx++;
+			if(idx >= SIZE) break;
+			sum += A[idx];
+			if(TARGET < sum) break;
 		}
-		else if (TARGET < sum) {
-			return;
-		}
-		
-		if(idx+1 < SIZE) DFS(idx+1,sum+A[idx+1]);
 	}
 	
 
