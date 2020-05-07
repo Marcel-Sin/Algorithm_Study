@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -17,44 +18,32 @@ public class Main {
 	static final int INF = Integer.MAX_VALUE;
 	static int N,S;
 	static int[] A;
-	static ArrayList<Integer> v1 = new ArrayList<Integer>();
-	static ArrayList<Integer> v2 = new ArrayList<Integer>();
-	static HashSet<Integer> v1key = new HashSet<Integer>();
-	static HashSet<Integer> v2key = new HashSet<Integer>();
+	static HashMap<Integer, Integer> h1 = new HashMap<Integer,Integer>();
+	static HashMap<Integer, Integer> h2 = new HashMap<Integer,Integer>();
 	public static void main(String[] args) throws IOException {
 		Init();
-		
-		if(N == 1) {
-			if(A[0] == S) System.out.println(1);
+		if(N <= 20) {
+			DFS(-1,0,N,h1);
+			if(h1.containsKey(S)) System.out.println(h1.get(S));
 			else System.out.println(0);
 		}
-		else if(N <= 20){
-			DFS(-1, 0, N, v1,v1key);
-			Collections.sort(v1);
-			System.out.println(Upper_Bound(v1, S)-Lower_Bound(v1, S));
-		}
 		else {
-		
 			int mid = N/2;
 			long counter = 0;
-			DFS(-1,0,mid,v1,v1key);
-			DFS(mid-1,0,N,v2,v2key);
-			Collections.sort(v1);
-			Collections.sort(v2);
-
-			counter += (Upper_Bound(v1,S)-Lower_Bound(v1,S));
-			counter += (Upper_Bound(v2,S)-Lower_Bound(v2,S));
+			DFS(-1,0,mid,h1);
+			DFS(mid-1,0,N,h2);
+			if(h1.containsKey(S)) counter += h1.get(S);
+			if(h2.containsKey(S)) counter += h2.get(S);
 			
-			for(int x : v1key) {
+			for(int x : h1.keySet()) {
 				int rest = S-x;
-				if(v2key.contains(rest)) {
-					int v1_counting = (Upper_Bound(v1,x)-Lower_Bound(v1,x));
-					int v2_counting = (Upper_Bound(v2,rest)-Lower_Bound(v2,rest));
-					counter += (long)v1_counting*(long)v2_counting;
+				if(h2.containsKey(rest)) {
+					int c1 = h1.get(x);
+					int c2 = h2.get(rest);
+					counter += (long)c1 * (long)c2;
 				}
 			}
 			System.out.println(counter);
-		
 		}
 	}
 
@@ -67,40 +56,16 @@ public class Main {
 		for(int i = 0; i < N; i++) A[i] = nextInt(stk);
 	}
 	
-	static void DFS(int start,int sum, int end, ArrayList<Integer> v,HashSet<Integer> h) {
+	static void DFS(int start,int sum, int end, HashMap<Integer, Integer> h) {
 		if(start == end) return;
 		
 		for(int i = start+1; i < end; i++) {
 			int n = sum+A[i];
-			DFS(i,n,end,v,h);
-			v.add(n);
-			h.add(n);
+			DFS(i,n,end,h);
+			if(h.containsKey(n) == false) h.put(n, 1);
+			else h.put(n, h.get(n)+1);
 		}
 	}
-	
-	static int Lower_Bound(ArrayList<Integer> a, int target) {
-		int low=0,high=a.size()-1,mid = 0;
-		while(low < high) {
-			mid = (low+high)/2;
-			if(a.get(mid) < target) low = mid+1;
-			else high = mid;
-		}
-		if(a.get(high) != target) return Integer.MIN_VALUE;
-		else return high;
-	}
-	static int Upper_Bound(ArrayList<Integer> a, int target) {
-		int low=0,high=a.size()-1,mid = 0;
-		while(low < high) {
-			mid = (low+high)/2;
-			if(a.get(mid) <= target) low = mid+1;
-			else high = mid;
-		}
-		if(a.get(high) == target) return high+1;
-		else if(high-1 < 0) return Integer.MIN_VALUE;
-		else if(a.get(high-1) != target) return Integer.MIN_VALUE;
-		return high;
-	}
-
 	
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
