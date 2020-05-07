@@ -5,55 +5,77 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.StringTokenizer;
 
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int SIZE,TARGET,COUNT = 0;
+	static final int INF = Integer.MAX_VALUE;
+	static int N,S;
 	static int[] A;
+	static ArrayList<Integer> v1 = new ArrayList<Integer>();
+	static ArrayList<Integer> v2 = new ArrayList<Integer>();
 	public static void main(String[] args) throws IOException {
-		Initializing();
-		DFS(-1,0);
-		System.out.println(COUNT);
+		Init();
+		DFS(-1, 0, N, v1);
+		Collections.sort(v1);
+		if(N == 1) {
+			if(A[0] == S) System.out.println(1);
+			else System.out.println(0);
+		}
+		else {
+			System.out.println(Upper_Bound(v1, S)-Lower_Bound(v1, S));
+		}
+		
+	}
+
+	static void Init() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		S = nextInt(stk);
+		A = new int[N];
+		stk = new StringTokenizer(io.inputStr());
+		for(int i = 0; i < N; i++) A[i] = nextInt(stk);
 	}
 	
-	static void DFS(int idx,int sum) {
-		if(sum == TARGET && idx != -1) COUNT++;
+	static void DFS(int cur,int sum, int limit, ArrayList<Integer> v) {
+		if(cur == limit) return;
 		
-		for(int i = idx+1; i < SIZE; i++) {
-			DFS(i,sum+A[i]);
+		for(int i = cur+1; i < limit; i++) {
+			DFS(i,sum+A[i],limit,v1);
+			v.add(sum+A[i]);
 		}
 	}
 	
-
-	
-	
-	static void Initializing() throws IOException{
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		SIZE = nextInt(stk);
-		TARGET = nextInt(stk);
-		stk = new StringTokenizer(io.inputStr());
-		A = new int[SIZE];
-		for(int i = 0; i < SIZE; i++) A[i] = nextInt(stk);
-		Arrays.sort(A);
+	static int Lower_Bound(ArrayList<Integer> a, int target) {
+		int low=0,high=a.size()-1,mid = 0;
+		while(low < high) {
+			mid = (low+high)/2;
+			if(a.get(mid) < target) low = mid+1;
+			else high = mid;
+		}
+		if(a.get(high) != target) return Integer.MAX_VALUE;
+		else return high;
+	}
+	static int Upper_Bound(ArrayList<Integer> a, int target) {
+		int low=0,high=a.size()-1,mid = 0;
+		while(low < high) {
+			mid = (low+high)/2;
+			if(a.get(mid) <= target) low = mid+1;
+			else high = mid;
+		}
+		if(a.get(high) == target) return high+1;
+		else if(high-1 < 0) return Integer.MAX_VALUE;
+		else if(a.get(high-1) != target) return Integer.MAX_VALUE;
+		return high;
 	}
 
+	
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
-	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
 	}
 }
 
