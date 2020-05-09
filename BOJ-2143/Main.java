@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.StringTokenizer;
 
@@ -14,61 +15,68 @@ public class Main {
 	static int NEED;
 	static int[] A,B;
 	static int N,M;
-	static ArrayList<Integer> v1 = new ArrayList<Integer>();
-	static ArrayList<Integer> v2 = new ArrayList<Integer>();
+	static int[] v1,v2;
+	static int v1_SIZE,v2_SIZE;
 	
 	public static void main(String[] args) throws IOException {
 		
 		Init();
-		v1.add(Integer.MIN_VALUE);
-		v2.add(Integer.MIN_VALUE);		
-		Case_Create(A, v1);
-		Case_Create(B, v2);
-		v1.add(Integer.MAX_VALUE);
-		v2.add(Integer.MAX_VALUE);
+		v1_SIZE = Case_Create(A, v1);
+		v2_SIZE = Case_Create(B, v2);
+		Arrays.sort(v1,0,v1_SIZE);
+		Arrays.sort(v2,0,v2_SIZE);
+		v1[v1_SIZE] = Integer.MAX_VALUE;
+		v2[v2_SIZE] = Integer.MAX_VALUE;
 		
-		Collections.sort(v1);
-		Collections.sort(v2);
-		
-		long counter = 0;
-		int L = 1,R = v2.size()-2,value,sum;
-		int c1,c2;
-		int sizeA = v1.size()-1;
-		while(L < sizeA && R >= 1) {
-			sum = v1.get(L) + v2.get(R);
-			if(sum < NEED) {
-				value = v1.get(L);
-				while(L < sizeA && v1.get(L) == value) L++;
+		int rest, num = v1[1],next;
+		long counter=0,c1,c2;
+		while(true) {
+			rest = NEED-num;
+			if(Lower(v2,rest,v2_SIZE) != INF) {
+				c1 = Upper(v1,num,v1_SIZE) - Lower(v1,num,v1_SIZE);
+				c2 = Upper(v2,rest,v2_SIZE) - Lower(v2,rest,v2_SIZE);
+				counter += c1*c2;
 			}
-			else if(sum > NEED) {
-				value = v2.get(R);
-				while(R >= 1 && v2.get(R) == value) R--;
-			}
-			else {
-				c1 = 0;
-				c2 = 0;
-				value = v1.get(L);
-				while(L < sizeA && v1.get(L) == value) { L++; c1++; }
-				value = v2.get(R);
-				while(R >= 1 && v2.get(R) == value) { R--; c2++; }
-				counter += (long)c1*(long)c2;
-			}
+			next = Upper(v1,num,v1_SIZE);
+			if(next == INF) break;
+			else num = v1[next];
 		}
 		System.out.println(counter);
-		
 
 	}
 	
 	
-	static void Case_Create(int[] a,ArrayList<Integer> v) {
-		int size = a.length,sum = 0;
+	static int Lower(int[] a, int target, int size) {
+		int s = 1, e = size-1,m;
+		while(s < e) {
+			m = (s+e)/2;
+			if(a[m] < target) s = m+1;
+			else e = m;
+		}
+		if(a[e] != target) return INF;
+		else return e;
+	}
+	static int Upper(int[] a, int target, int size) {
+		int s = 1, e = size,m;
+		while(s < e) {
+			m = (s+e)/2;
+			if(a[m] <= target) s = m+1;
+			else e = m;
+		}
+		if(a[e-1] != target) return INF;
+		else return e;
+	}
+	
+	static int Case_Create(int[] a,int[] v) {
+		int size = a.length,sum = 0,idx = 1;
 		for(int i = 0; i < size; i++) {
 			sum = 0;
 			for(int j = i; j < size; j++) {
 				sum += a[j];
-				v.add(sum);
+				v[idx++] = sum;
 			}
 		}
+		return idx;
 	}
 	static void Init() throws IOException{
 		NEED = io.inputInt();
@@ -80,7 +88,11 @@ public class Main {
 		M = io.inputInt();
 		B = new int[M];
 		stk = new StringTokenizer(io.inputStr());
-		for(int i = 0; i < M; i++) B[i] = nextInt(stk); 
+		for(int i = 0; i < M; i++) B[i] = nextInt(stk);
+		v1 = new int[2000002];
+		v2 = new int[2000002];
+		v1[0] = Integer.MIN_VALUE;
+		v2[0] = Integer.MIN_VALUE;
 	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
