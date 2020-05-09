@@ -25,21 +25,29 @@ public class Main {
 		v2_SIZE = Case_Create(B, v2);
 		Arrays.sort(v1,0,v1_SIZE);
 		Arrays.sort(v2,0,v2_SIZE);
-		v1[v1_SIZE] = Integer.MAX_VALUE;
-		v2[v2_SIZE] = Integer.MAX_VALUE;
-		
-		int rest, num = v1[1],next;
-		long counter=0,c1,c2;
-		while(true) {
-			rest = NEED-num;
-			if(Lower(v2,rest,v2_SIZE) != INF) {
-				c1 = Upper(v1,num,v1_SIZE) - Lower(v1,num,v1_SIZE);
-				c2 = Upper(v2,rest,v2_SIZE) - Lower(v2,rest,v2_SIZE);
-				counter += c1*c2;
+
+		int sum, value, L = 0, R = v2_SIZE-1;
+		long c1,c2,counter = 0;
+		while(L < v1_SIZE && R >= 0) {
+			sum = v1[L] + v2[R];
+			if(sum < NEED) {
+				value = v1[L];
+				while(L < v1_SIZE && v1[L] == value) L++;
 			}
-			next = Upper(v1,num,v1_SIZE);
-			if(next == INF) break;
-			else num = v1[next];
+			else if(sum > NEED) {
+				value = v2[R];
+				while(R >= 0 && v2[R] == value) R--;
+			}
+			else {
+				c1 = 0;
+				c2 = 0;
+				value = v1[L];
+				while(L < v1_SIZE && v1[L] == value) { L++; c1++;}
+				value = v2[R];
+				while(R >= 0 && v2[R] == value) { R--; c2++; }
+				counter += c1*c2;
+				
+			}
 		}
 		System.out.println(counter);
 
@@ -68,7 +76,7 @@ public class Main {
 	}
 	
 	static int Case_Create(int[] a,int[] v) {
-		int size = a.length,sum = 0,idx = 1;
+		int size = a.length,sum = 0,idx = 0;
 		for(int i = 0; i < size; i++) {
 			sum = 0;
 			for(int j = i; j < size; j++) {
@@ -89,10 +97,8 @@ public class Main {
 		B = new int[M];
 		stk = new StringTokenizer(io.inputStr());
 		for(int i = 0; i < M; i++) B[i] = nextInt(stk);
-		v1 = new int[2000002];
-		v2 = new int[2000002];
-		v1[0] = Integer.MIN_VALUE;
-		v2[0] = Integer.MIN_VALUE;
+		v1 = new int[1000002];
+		v2 = new int[1000002];
 	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
