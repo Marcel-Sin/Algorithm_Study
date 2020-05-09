@@ -3,9 +3,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 
@@ -15,42 +14,24 @@ public class Main {
 	static int NEED;
 	static int[] A,B;
 	static int N,M;
-	static int[] v1,v2;
-	static int v1_SIZE,v2_SIZE;
-	
+	static HashMap<Integer,Integer> h1 = new HashMap<Integer,Integer>();
+	static HashMap<Integer,Integer> h2 = new HashMap<Integer,Integer>();
 	public static void main(String[] args) throws IOException {
 		
 		Init();
-		v1_SIZE = Case_Create(A, v1);
-		v2_SIZE = Case_Create(B, v2);
-		Arrays.sort(v1,0,v1_SIZE);
-		Arrays.sort(v2,0,v2_SIZE);
-
-		int sum, value, L = 0, R = v2_SIZE-1;
-		long c1,c2,counter = 0;
-		while(L < v1_SIZE && R >= 0) {
-			sum = v1[L] + v2[R];
-			if(sum < NEED) {
-				value = v1[L];
-				while(L < v1_SIZE && v1[L] == value) L++;
-			}
-			else if(sum > NEED) {
-				value = v2[R];
-				while(R >= 0 && v2[R] == value) R--;
-			}
-			else {
-				c1 = 0;
-				c2 = 0;
-				value = v1[L];
-				while(L < v1_SIZE && v1[L] == value) { L++; c1++;}
-				value = v2[R];
-				while(R >= 0 && v2[R] == value) { R--; c2++; }
+		Case_Create(A, h1);
+		Case_Create(B, h2);
+		int rest;
+		long c1,c2,counter=0;
+		for(int x : h1.keySet()) {
+			rest = NEED-x;
+			if(h2.containsKey(rest)) {
+				c1 = h1.get(x);
+				c2 = h2.get(rest);
 				counter += c1*c2;
-				
 			}
 		}
 		System.out.println(counter);
-
 	}
 	
 	
@@ -75,16 +56,15 @@ public class Main {
 		else return e;
 	}
 	
-	static int Case_Create(int[] a,int[] v) {
-		int size = a.length,sum = 0,idx = 0;
+	static void Case_Create(int[] a,HashMap<Integer,Integer> h) {
+		int size = a.length,sum = 0;
 		for(int i = 0; i < size; i++) {
 			sum = 0;
 			for(int j = i; j < size; j++) {
 				sum += a[j];
-				v[idx++] = sum;
+				h.put(sum,h.getOrDefault(sum, 0)+1);
 			}
 		}
-		return idx;
 	}
 	static void Init() throws IOException{
 		NEED = io.inputInt();
@@ -97,8 +77,6 @@ public class Main {
 		B = new int[M];
 		stk = new StringTokenizer(io.inputStr());
 		for(int i = 0; i < M; i++) B[i] = nextInt(stk);
-		v1 = new int[1000002];
-		v2 = new int[1000002];
 	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
