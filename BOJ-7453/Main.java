@@ -19,24 +19,35 @@ public class Main {
 	static int N;
 	static int SUM;
 	static int[] A,B,C,D;
-	static HashMap<Integer,Integer> h1 = new HashMap<Integer,Integer>();
-	static HashMap<Integer,Integer> h2 = new HashMap<Integer,Integer>();
-	static long COUNTER,c1,c2;
+	static int[] A1;
+	static int[] A2;
+	static int A1_IDX,A2_IDX;
+	static long c1,c2,COUNTER;
 	static int rest;
-	static long start,end;
 	public static void main(String[] args) throws IOException {
 		Init();
-		Array_Sum_Cases(A, B, h1);
-		Array_Sum_Cases(C, D, h2);
-		for(int x : h1.keySet()) {
-			rest = 0-x;
-			if(h2.containsKey(rest)) {
-				c1 = h1.get(x);
-				c2 = h2.get(rest);
+		A1_IDX = Array_Sum_Cases(A, B, A1);
+		A2_IDX = Array_Sum_Cases(C, D, A2);
+		Arrays.sort(A1,0,A1_IDX);
+		Arrays.sort(A2,0,A2_IDX);
+		A1[A1_IDX] = Integer.MAX_VALUE;
+		A2[A2_IDX] = Integer.MAX_VALUE;
+		
+		int num = A1[1];
+		int temp;
+		while(true) {
+			rest = 0-num;
+			if(Lower_Bound(A2,A2_IDX,rest) != INF) {
+				c1 = Upper_Bound(A1,A1_IDX,num) - Lower_Bound(A1,A1_IDX,num);
+				c2 = Upper_Bound(A2,A2_IDX,rest) - Lower_Bound(A2,A2_IDX,rest);
 				COUNTER += c1*c2;
 			}
+			temp = Upper_Bound(A1,A1_IDX,num);
+			if(temp == INF) break;
+			else num = A1[temp];
 		}
 		System.out.println(COUNTER);
+		
 	}
 
 	static void Init() throws IOException{
@@ -53,18 +64,45 @@ public class Main {
 			C[i] = nextInt(stk);
 			D[i] = nextInt(stk);
 		}
+		
+		int size = N*N+2;
+		A1 = new int[size];
+		A2 = new int[size];
+		A1[0] = Integer.MIN_VALUE;
+		A2[0] = Integer.MIN_VALUE;
 	}
 	
-	static void Array_Sum_Cases (int[] a,int[] b,HashMap<Integer,Integer> h) {
-		
+	static int Array_Sum_Cases (int[] a,int[] b,int[] c) {
+		int idx = 1;
 		for(int i = 0; i < N; i++) {
 			for(int j = 0; j < N; j++) {
 				 SUM = a[i]+b[j];
-				 h.put(SUM,h.getOrDefault(SUM, 0)+1);
+				 c[idx++] = SUM; 
 			}
 		}
+		return idx;
 	}
 	
+	static int Lower_Bound(int[] a, int size,int target) {
+		int s = 1, e = a.length-1, mid;
+		while(s < e) {
+			mid = (s+e)/2;
+			if(a[mid] < target) s = mid+1;
+			else e = mid;
+		}
+		if(a[e] == target) return e;
+		else return INF;
+	}
+	static int Upper_Bound(int[] a, int size,int target) {
+		int s = 1, e = a.length-1, mid;
+		while(s < e) {
+			mid = (s+e)/2;
+			if(a[mid] <= target) s = mid+1;
+			else e = mid;
+		}
+		if(a[e-1] == target) return e;
+		else return INF;
+	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
