@@ -30,46 +30,35 @@ public class Main {
 		Collections.sort(v1);
 		Collections.sort(v2);
 		
-		int num = v1.get(1), rest,next;
-		long c1,c2,counter=0;
-		while(true) {
-			rest = NEED-num;
-			if(Lower(v2,rest) != INF) {
-				c1 = Upper(v1,num) - Lower(v1,num);
-				c2 = Upper(v2,rest) - Lower(v2,rest);
-				counter += c1*c2;
+		long counter = 0;
+		int L = 1,R = v2.size()-2,value,sum;
+		int c1,c2;
+		int sizeA = v1.size()-1;
+		while(L < sizeA && R >= 1) {
+			sum = v1.get(L) + v2.get(R);
+			if(sum < NEED) {
+				value = v1.get(L);
+				while(L < sizeA && v1.get(L) == value) L++;
 			}
-			next = Upper(v1,num);
-			if(next == INF) break;
-			else num = v1.get(next);
+			else if(sum > NEED) {
+				value = v2.get(R);
+				while(R >= 1 && v2.get(R) == value) R--;
+			}
+			else {
+				c1 = 0;
+				c2 = 0;
+				value = v1.get(L);
+				while(L < sizeA && v1.get(L) == value) { L++; c1++; }
+				value = v2.get(R);
+				while(R >= 1 && v2.get(R) == value) { R--; c2++; }
+				counter += (long)c1*(long)c2;
+			}
 		}
 		System.out.println(counter);
+		
 
 	}
 	
-	
-	static int Lower(ArrayList<Integer> v, int target) {
-		int s = 0, e = v.size()-1,m,mid;
-		while(s < e) {
-			m = (s+e)/2;
-			mid = v.get(m);
-			if(mid < target) s = m+1;
-			else e = m;
-		}
-		if(v.get(e) != target) return INF;
-		else return e;
-	}
-	static int Upper(ArrayList<Integer> v, int target) {
-		int s = 0, e = v.size()-1,m,mid;
-		while(s < e) {
-			m = (s+e)/2;
-			mid = v.get(m);
-			if(mid <= target) s = m+1;
-			else e = m;
-		}
-		if(v.get(e-1) != target) return INF;
-		else return e;
-	}
 	
 	static void Case_Create(int[] a,ArrayList<Integer> v) {
 		int size = a.length,sum = 0;
