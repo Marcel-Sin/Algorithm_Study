@@ -3,81 +3,112 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
+	static long startTime,endTime;
+	static int[] A,B,C,D;
+	static int[] TEMP = new int[10000000];
 	public static void main(String[] args) throws IOException {
-		int[] t = {9,6,7,5,2,0,1,5,3,9,7,5,6,6,6};
-		QuickSearch(t,0,t.length-1,9);
-		for(int n : t) System.out.print(n+" ");
+		Init();
+		startTime = System.currentTimeMillis();
+		QuickSort(A,0,A.length-1,500000);
+		endTime = System.currentTimeMillis();
+		System.out.println("QuickSearch Time(ms) : "+(endTime-startTime));
+
+		startTime = System.currentTimeMillis();
+		MergeSort_NotRecursive(B);
+		System.out.println(BinarySearch(B, 500000));
+		endTime = System.currentTimeMillis();
+		System.out.println("MergeSort+BinarySearch Time(ms) : "+(endTime-startTime));
+	
 		
 	}
 
-	static int BinarySearch(int[] a, int target) {
-		int s = 0, e = a.length-1,mid = 0;
-		while(s <= e) {
-			mid = (s+e)/2;
-			if(a[mid] < target) s = mid + 1;
-			else if(a[mid] > target) e = mid-1;
-			else break;
-		}
-		if(a[mid] == target) return mid;
-		else return -1;
-		
-	}
 	
-	static int Lower(int[] a, int target) {
-		int s = 0, e = a.length, mid = 0;
-		while(s < e) {
-			mid = (s+e)/2;
-			if(a[mid] < target) s = mid + 1;
-			else e = mid;
+	static int Partition(int[] a, int low, int high, int pivot) {
+		int P = a[pivot], SI = low;
+		Swap(a,pivot,high);
+		for(int i = low; i < high; i++) {
+			if(a[i] < P) Swap(a,i,SI++);
 		}
-		if(e < a.length && a[e] == target) return e;
-		else return -1;
+		Swap(a,SI,high);
+		return SI;
 	}
-	static int Upper(int[] a, int target) {
-		int s = 0, e = a.length, mid = 0;
-		while(s < e) {
-			mid = (s+e)/2;
-			if(a[mid] <= target) s = mid + 1;
-			else e = mid;
+	static void QuickSort(int[] a, int low, int high,int target) {
+		if(low >= high) return;
+		int part = Partition(a, low, high, (low+high)/2);
+		if (a[part] == target) {
+			System.out.println("Found it! : "+target);
+			return;
 		}
-		if(e != 0 && a[e-1] != target) return -1;
-		else if(e == 0 && a[e] != target) return -1;
-		else return e;
+		QuickSort(a, low, part-1,target);
+		QuickSort(a, part+1, high,target);
 	}
-	
-	
 	static void Swap(int[] a, int i, int j) {
 		int temp = a[i];
 		a[i] = a[j];
 		a[j] = temp;
 	}
-	static int Partition(int[] a,int s, int e,int p) {
-		int P = a[p], SI = s;
-		Swap(a,p,e);
-		for(int i = s; i < e; i++) {
-			if(a[i] < P) Swap(a,i,SI++);
+
+	
+	static void MergeSort_NotRecursive(int[] a) {
+		Stack<Integer> stack = new Stack<Integer>();
+		stack.push(a.length-1);
+		stack.push(0);
+		int low,high,mid;
+		int i,j;
+		while(stack.isEmpty() == false) {
+			low = stack.pop();
+			high = stack.pop();
+			if(low >= high) continue;
+			mid = (low+high)/2;
+			stack.push(mid);
+			stack.push(low);
+			
+			stack.push(high);
+			stack.push(mid+1);
+			
+			i = low; j = mid+1;
+			for(int k = low; j <= high; k++) {
+				if(i > mid) TEMP[k] = a[j++];
+				else if(high < j) TEMP[k] = a[i++];
+				else if(a[i] > a[j]) TEMP[k] = a[j++];
+				else TEMP[k] = a[i++];
+			}
+			
+			for(i = low; i <= high; i++) a[i] = TEMP[i];
 		}
-		Swap(a,e,SI);
-		return SI;
 	}
-	static void QuickSearch(int[] a, int s, int e, int target) {
-		if(e <= s) return;
-		int part = Partition(a, s, e, (s+e)/2);
-		if(a[part] == target) {
-			System.out.println(part);
-			return;
+	static int BinarySearch(int[] a,int target) {
+		int s = 0, e = a.length-1,mid=0;
+		while(s <= e) {
+			mid = (s+e)/2;
+			if (a[mid] == target) return mid;
+			else if(a[mid] < target) s = mid+1;
+			else e = mid-1;
 		}
-		else if(a[part] < target) QuickSearch(a,part+1,e,target);
-		else QuickSearch(a,s,part-1,target);
-		
+		if(a[mid] == target) return mid;
+		else return -1;
 	}
 	
 	
+	
+	
+	
+	static void Init() {
+		A = new int[10000000];
+		for(int i = 0; i < 10000000; i++) A[i] = Random(0,10000000);
+		B = A.clone();
+
+	}
+	static int Random(int min,int max) {
+		int number = (int)(Math.random()*max);
+		return number;
+	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
