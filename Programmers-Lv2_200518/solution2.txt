@@ -1,0 +1,24 @@
+import java.util.*;
+class Solution {
+    public boolean solution(String[] phone_book) {
+        Arrays.sort(phone_book);
+        int loopCount = phone_book.length-1;
+        boolean answer = true;
+        for(int i = 0; i < loopCount; i++) {
+            if (checking(phone_book[i],phone_book[i+1]) == true) {
+                answer = false;
+                break;
+            }
+        }
+        return answer;
+    }
+
+    public boolean checking(String a, String b) {
+        int sizeA = a.length(), sizeB = b.length(),i=0;
+        while( i < sizeA && i < sizeB){
+            if(a.charAt(i) != b.charAt(i)) return false;
+            i++;
+        }
+        return true;
+    } 
+}
