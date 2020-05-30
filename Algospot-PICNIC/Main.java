@@ -10,58 +10,54 @@ import java.util.StringTokenizer;
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static int LOOP;
+	static boolean[][] FRIEND;
 	static int FRIEND_SIZE;
-	static ArrayList<Integer>[] FRIEND;   
 	static boolean[] CHECK;
-	static int COUNTER;
 	
 	public static void main(String[] args) throws IOException {
 		LOOP = io.inputInt();
 		for(int i = 0; i < LOOP; i++) {
 			Init();
-			DFS(0,0);
-			System.out.println(COUNTER);
-		}
-
-	}
-	
-	static void DFS(int cur,int len) {
-		if(len == FRIEND_SIZE) {
-			COUNTER++;
-			return;
-		}
-		//2명씩 짝지어주고 DFS로 넘기기.
-		for(int s = cur; s < FRIEND_SIZE; s++) {
-			if(CHECK[s] == false) {
-				for(int i = 0; i < FRIEND[s].size(); i++) {
-					if( CHECK[FRIEND[s].get(i)] == false ) {
-						CHECK[FRIEND[s].get(i)] = CHECK[s] = true;
-						DFS(s,len+2);
-						CHECK[FRIEND[s].get(i)] = CHECK[s] = false;
-					}
-				}
-			}
+			System.out.println(DFS(0,0));
 		}
 		
 	}
+	
+	static int DFS(int cur,int len) {
+		if(len == FRIEND_SIZE) return 1;
+
+		
+		int counter = 0;
+		for(int s = cur; s < FRIEND_SIZE; s++) {
+			
+			if(CHECK[s] == true) continue;
+			for(int i = 0; i < FRIEND_SIZE; i++) {
+				if(FRIEND[s][i] == true && CHECK[i] == false) {
+					CHECK[s] = CHECK[i] = true;
+					counter += DFS(s,len+2);
+					CHECK[s] = CHECK[i] = false;
+				}
+			}
+		}// For END
+		return counter;
+		
+	}
+	
 	
 	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		FRIEND_SIZE = nextInt(stk);
-		int relation = nextInt(stk);
-		COUNTER = 0;
+		FRIEND = new boolean[FRIEND_SIZE][FRIEND_SIZE];
 		CHECK = new boolean[FRIEND_SIZE];
-		FRIEND = new ArrayList[FRIEND_SIZE];
-		for (int i = 0; i < FRIEND_SIZE; i++) FRIEND[i] = new ArrayList<Integer>();
-		
 		stk = new StringTokenizer(io.inputStr());
 		int a,b;
-		for(int i = 0; i < relation; i++) {
+		while(stk.hasMoreTokens()) {
 			a = nextInt(stk);
 			b = nextInt(stk);
-			if(a > b) {int temp = a; a=b; b=temp;}
-			FRIEND[a].add(b);
+			if(a > b) {int temp = a; a = b; b = temp;}
+			FRIEND[a][b] = true;
 		}
+		
 	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
