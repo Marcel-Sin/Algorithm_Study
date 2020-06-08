@@ -9,7 +9,8 @@ import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int TOTAL, IDX;
+	static int TOTAL,IDX;
+	static char[][] MAP = new char[32][32];
 	static char[] TEXT;
 	
 	
@@ -19,34 +20,37 @@ public class Main {
 		TOTAL = io.inputInt();
 		for(int i = 0; i < TOTAL; i++) {
 			Init();
-			System.out.println(Quad_Reverse());
+			Quad_Decompress(0, 0, 32);
+			for(int x = 0; x < 32; x++) {
+				System.out.println(new String(MAP[x]));
+			}
 		}
 	}
 	
-	static String Quad_Reverse() {
-		StringBuilder sb1 = new StringBuilder();
-		StringBuilder sb2 = new StringBuilder();
-		StringBuilder sb3 = new StringBuilder();
-		if(TEXT[IDX] == 'x') {
-			sb3.append('x');
-			IDX++;
-			for(int i = 0; i < 4; i++) {
-				if(i < 2) {
-					if(TEXT[IDX] == 'x') sb1.append(Quad_Reverse());
-					else sb1.append(TEXT[IDX++]);
-				}
-				if(2 <= i) {
-					if(TEXT[IDX] == 'x') sb2.append(Quad_Reverse());
-					else sb2.append(TEXT[IDX++]);
+	static void Quad_Decompress(int row, int col, int size) {
+		if(TEXT[IDX] == 'b') {
+			for(int i = 0; i < size; i++) {
+				for(int j = 0; j < size; j++) {
+					MAP[row+i][col+j] = '■';
 				}
 			}
-			sb3.append(sb2);
-			sb3.append(sb1);
-			return sb3.toString();
+			IDX++;
+		}
+		else if(TEXT[IDX] == 'w') {
+			for(int i = 0; i < size; i++) {
+				for(int j = 0; j < size; j++) {
+					MAP[row+i][col+j] = '□';
+				}
+			}
+			IDX++;
 		}
 		else {
-			sb3.append(TEXT[IDX]);
-			return sb3.toString();
+			int half = size/2;
+			IDX++;
+			Quad_Decompress(row, col, half);
+			Quad_Decompress(row, col+half, half);
+			Quad_Decompress(row+half, col, half);
+			Quad_Decompress(row+half, col+half, half);
 		}
 	}
 
