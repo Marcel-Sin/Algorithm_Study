@@ -18,23 +18,50 @@ public class Main {
 		TOTAL = io.inputInt();
 		for(int i = 0; i < TOTAL; i++) {
 			Init();
-			BruteForce_Solve();
-			System.out.println(ANS);
+			System.out.println(DNC_Solve(0,SIZE-1));
 		}
 	}
 	
-	static void BruteForce_Solve() {
-		int left, right, height,max = 0,value;
+	static int DNC_Solve(int left, int right) {
 		
-		for(left = 0; left < SIZE; left++) {
-			height = WOOD[left];
-			for(right = left; right < SIZE; right++) {
-				height = Min(height,WOOD[right]);
-				value = (right-left+1)*height;
-				max = Max(value,max);
-			}
+		//Base Condition
+		if (left >= right) return WOOD[left];
+		
+		//Divide
+		int mid = (left+right)/2;
+		
+		//conquer
+		int resultA = Max(DNC_Solve(left,mid),DNC_Solve(mid+1,right));
+		int resultB = Max(resultA, Middle_Max(mid,left,right));
+		
+		return resultB;
+	}
+	
+	static int Middle_Max(int mid, int leftBound, int rightBound) {
+		if (leftBound >= rightBound)
+			return WOOD[leftBound];
+		int size,max, l = mid, r = mid + 1, height;
+		height = Min(WOOD[l], WOOD[r]);
+		max = height * 2;
+		
+		while (leftBound < l && r < rightBound) {
+			if (WOOD[l - 1] < WOOD[r + 1]) height = Min(height, WOOD[++r]);
+			else height = Min(height, WOOD[--l]);
+			
+			size = height * (r - l + 1);
+			max = Max(size, max);
 		}
-		ANS = max;
+		while (r < rightBound) {
+			height = Min(height, WOOD[++r]);
+			size = height * (r - l + 1);
+			max = Max(size, max);
+		}
+		while (leftBound < l) {
+			height = Min(height, WOOD[--l]);
+			size = height * (r - l + 1);
+			max = Max(size, max);
+		}
+		return max;	
 	}
 	
 	static int Min(int a, int b) {
