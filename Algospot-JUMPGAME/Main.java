@@ -10,28 +10,27 @@ import java.util.StringTokenizer;
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static int TOTAL;
-	static int[][] MAP;	
-	static int SIZE;
-	static boolean ANS;
+	static int[][] MAP;
+	static int[][] DP;	
+	static int SIZE; 
 	public static void main(String[] args) throws IOException {
 		TOTAL = io.inputInt();
 		for(int i = 0; i < TOTAL; i++) {
 			Init();
-			DFS(0,0);
-			if(ANS) System.out.println("YES");
+			int ans = DFS(0,0);
+			if(ans == 1) System.out.println("YES");
 			else System.out.println("NO");
 		}
-	}   
+	} 
 		
-	static void DFS(int curR, int curC) {
-		if(MAP[curR][curC] == 0) {
-			ANS = true;
-			return;
-		}
-		int walkCount = MAP[curR][curC];
-		if(curR+walkCount < SIZE) DFS(curR+walkCount,curC);
-		if(curC+walkCount < SIZE) DFS(curR,curC+walkCount);
-		return;
+	static int DFS(int curR, int curC) {
+		if(MAP[curR][curC] == 0) return 1;
+		if(DP[curR][curC] != -1) return DP[curR][curC];
+		int walkCount = MAP[curR][curC], way1 = 0, way2 = 0;
+		if(curR+walkCount < SIZE) way1 = DFS(curR+walkCount,curC);
+		if(curC+walkCount < SIZE) way2 = DFS(curR,curC+walkCount);
+		DP[curR][curC] = Max(way1,way2);
+		return DP[curR][curC];
 	}
 	
 	
@@ -40,11 +39,12 @@ public class Main {
 	static void Init() throws IOException{
 		SIZE = io.inputInt();	
 		MAP = new int[SIZE][SIZE];
+		DP = new int[SIZE][SIZE];
 		for(int a = 0; a < SIZE; a++) {
 			StringTokenizer stk = new StringTokenizer(io.inputStr());
 			for (int b = 0; stk.hasMoreTokens(); b++) MAP[a][b] = nextInt(stk);
+			Arrays.fill(DP[a], -1);
 		}
-		ANS = false;
 	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
