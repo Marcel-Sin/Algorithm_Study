@@ -3,7 +3,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.StringTokenizer;
 
 
@@ -12,6 +14,9 @@ public class Main {
 	static int TOTAL;
 	static char[] WILD;
 	static char[][] DB;
+	static int[][] DP;
+	static ArrayList<String> ANS = new ArrayList<String>();
+	
 	
 	public static void main(String[] args) throws IOException {
 		TOTAL = io.inputInt();
@@ -22,13 +27,23 @@ public class Main {
 	} 
 		
 	static void Wild_Search() {
+		ANS.clear();
 		for(int i = 0; i < DB.length; i++) {
-			if(Compare_Wild(WILD,0,WILD.length-1,DB[i],0,DB[i].length-1) == true) System.out.println(new String(DB[i]));
+			DP_Clear();
+			if(Compare_Wild(WILD,0,DB[i],0) == 1) ANS.add(new String(DB[i]));
 		}
+		Collections.sort(ANS);
+		for(int i = 0; i < ANS.size(); i++) System.out.println(ANS.get(i));
 	}
 	
-	static boolean Compare_Wild(char[] origin,int originStart,int originEnd, char[] data, int dataStart,int dataEnd) {
+	static void DP_Clear() {
+		for(int i=0;i<DP.length; i++) Arrays.fill(DP[i], -1);
+	}
+	
+	static int Compare_Wild(char[] origin,int originStart, char[] data, int dataStart) {
 		int originPos = originStart, dataPos = dataStart;
+		int originEnd = origin.length-1, dataEnd = data.length-1;
+		if(DP[originStart][dataStart] != -1) return DP[originStart][dataStart]; 
 		while(originPos <= originEnd && dataPos <= dataEnd) {
 			if(origin[originPos] != '?' && origin[originPos] != data[dataPos]) break;
 			originPos++;
@@ -42,33 +57,44 @@ public class Main {
 		if(originPos == originEnd+1) {;
 			int originLength = originEnd - originStart;
 			int dataLength = dataEnd - dataStart;
-			if (dataLength == originLength) return true;
-			else return false;
+			if (dataLength == originLength) DP[originStart][dataStart] = 1;
+			else DP[originStart][dataStart] = 0;
+			return DP[originStart][dataStart];
 		}
 		// 2. 비교 문자가 끝에 도달했다.
-		if(dataPos >= dataEnd+1) {
-			for(int i = originPos; i <= originEnd; i++) if(origin[i] != '*') return false;
-			return true;
+		if(dataPos == dataEnd+1) {
+			for(int i = originPos; i <= originEnd; i++) if(origin[i] != '*') { 
+				DP[originStart][dataStart] = 0;
+				return DP[originStart][dataStart];
+			}
+			DP[originStart][dataStart] = 1;
+			return DP[originStart][dataStart];
 		}
 		if(origin[originPos] == '*') {
-			if(originPos == originEnd) return true;
+			//마지막 번째자리가 *이였을 경우, 비교문자 마지막이 무엇이든 트루
+			if(originPos == originEnd) {
+				DP[originStart][dataStart] = 1;
+				return DP[originStart][dataStart];
+			}
 			for(int skip = 0; dataPos+skip <= dataEnd; skip++) {
-				if(Compare_Wild(origin,originPos+1,originEnd,data,dataPos+skip,dataEnd)) return true;
+				if(Compare_Wild(origin,originPos+1,data,dataPos+skip) == 1) 
+					{
+						DP[originStart][dataStart] = 1;
+						return DP[originStart][dataStart];
+					}
 			}
 		}
-		return false;
-		
-		
-		
-		
-		
+		DP[originStart][dataStart] = 0;
+		return DP[originStart][dataStart];
 	}
 	
 	static void Init() throws IOException{
 		WILD = io.inputStr().toCharArray();
 		int db_size = io.inputInt();
 		DB = new char[db_size][];
+		DP = new int[101][101];
 		for(int i = 0; i < db_size; i++) DB[i] = io.inputStr().toCharArray();
+		for(int i = 0; i < 101; i++) Arrays.fill(DP[i], -1);
 	}
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
