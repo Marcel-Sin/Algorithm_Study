@@ -13,35 +13,44 @@ public class Main {
 	static IO_Manager io = new IO_Manager();
 	static int TOTAL;
 	static int[] MAP = new int[501];
+	static int[] DP = new int[501];
+	
 	static int BOUNDER;
-	static int ANS;
 	
 	
 	public static void main(String[] args) throws IOException {
 		TOTAL = io.inputInt();
 		for(int i = 0; i < TOTAL; i++) {
 			Init();
-			for(int x = 0; x < BOUNDER; x++) BruteForce_Solve(x, 0);
-			System.out.println(ANS);
+			int temp = 0, max = 0;
+			for(int x = 0; x < BOUNDER; x++) {
+				temp = DP_Solve(x);
+				max = Max(temp,max);
+			}
+			System.out.println(max);
 		}
 	} 
-	static void BruteForce_Solve(int pos,int counter) {
-		counter++;
-		if(counter > ANS) ANS = counter;
+	static int DP_Solve(int pos) {
+		if(DP[pos] != -1) return DP[pos];
+		
+		int max = 0,temp = 0;
 		for(int i = pos+1; i < BOUNDER; i++) {
 			if(MAP[pos] < MAP[i]) {
-				BruteForce_Solve(i,counter);
+				temp = DP_Solve(i);
+				max = Max(temp,max);
 			}
 		}
+		DP[pos] = max+1;
+		return DP[pos];
 	}
 	
 	static void Init() throws IOException{
 		int size = io.inputInt();
 		BOUNDER = size;
 		int i = 0;
+		Arrays.fill(DP, -1);
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		while(stk.hasMoreTokens()) MAP[i++] = nextInt(stk);
-		ANS = 0;
 	}
 	
 
