@@ -9,69 +9,63 @@ import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	
-	static int INF = 999999999;
-	static int TOTAL,NUMBER_OF_PICECS,PROBLEM_SIZE;
-	static int[] PROBLEM_ARRAY;
-	static int[][] DP = new int[100][100];
-	static int[][] DP_MIN_ERROR = new int[100][100];
-	
+	static int TOTAL;
+	static int N,M;
+	static int[] PROBLEM;
+	static long[][] DP = new long[100][11];
+	static int[][] DP_ERROR = new int[100][101];
 	
 	public static void main(String[] args) throws IOException {
 		TOTAL = io.inputInt();
 		for(int i = 0; i < TOTAL; i++) {
 			Init();
-			Arrays.sort(PROBLEM_ARRAY);
-			System.out.println(DP_Solve(0,NUMBER_OF_PICECS));
+			Arrays.sort(PROBLEM);
+			System.out.println(DP_Solve(0,M));
 		}
-	} 
-   
-	static int DP_Solve(int from,int piece) {
-		if(from == PROBLEM_SIZE) return 0;
-		if(piece <= 0) return INF;
-		
-		if(DP[from][piece] != -1) return DP[from][piece];
-		int min = INF, value = 0;
-		for(int part = 1; from+part <= PROBLEM_SIZE; part++) {
-			value = MinError(from,from+part-1) + DP_Solve(from+part,piece-1);
-			min = Min(min,value);
-		}
-		DP[from][piece] = min;
-		return DP[from][piece];
 	}
 	
-	static int MinError(int from,int to) {
-		if(to-from <= 0) return PROBLEM_ARRAY[from];
-		if(DP_MIN_ERROR[from][to] != -1) return DP_MIN_ERROR[from][to];
-		int min = INF, d;
-		for(int n = PROBLEM_ARRAY[from]; n <= PROBLEM_ARRAY[to]; n++) {
-			d = 0;
-			for(int i = from; i <= to; i++) {
-				int dif = (PROBLEM_ARRAY[i]-n);
-				dif = dif*dif;
-				d += dif;
-			}
-			min = Min(min,d);
-		}
-		DP_MIN_ERROR[from][to] = min;
-		return DP_MIN_ERROR[from][to];
-	}
 	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		PROBLEM_SIZE = nextInt(stk);
-		NUMBER_OF_PICECS = nextInt(stk);
-		PROBLEM_ARRAY = new int[PROBLEM_SIZE];
+		N = nextInt(stk); 
+		M = nextInt(stk);
+		PROBLEM = new int[N];
 		stk = new StringTokenizer(io.inputStr());
-		for(int i = 0; stk.hasMoreElements(); i++) {
-			PROBLEM_ARRAY[i] = nextInt(stk);
-			Arrays.fill(DP[i], -1);
-			Arrays.fill(DP_MIN_ERROR[i], -1);
+		for(int i = 0; stk.hasMoreTokens(); i++) PROBLEM[i] = nextInt(stk);
+		for(int i = 0; i < DP_ERROR.length; i++) {			
+			Arrays.fill(DP_ERROR[i],-1);
+			Arrays.fill(DP[i],-1);
 		}
-		
-		
 	}
 	
+	static int Error(int inFrom, int exTo) {
+		if(exTo-inFrom <= 1) return 0;
+		if(DP_ERROR[inFrom][exTo] != -1) return DP_ERROR[inFrom][exTo];
+		
+		int minSum = Integer.MAX_VALUE, first = PROBLEM[inFrom], last = PROBLEM[exTo-1];
+		for(int n = first; n <= last; n++) {
+			int sum = 0, x = 0;
+			for(int idx = inFrom; idx < exTo; idx++) {
+				x = Math.abs(PROBLEM[idx] - n);
+				sum += x*x;
+			}
+			minSum = Min(sum,minSum);
+		}
+		DP_ERROR[inFrom][exTo] = minSum;
+		return DP_ERROR[inFrom][exTo];
+	}
 	
+	static long DP_Solve(int from, int piece) {
+		if(N-from <= piece) return 0;
+		if(piece < 0 || N <= from) return Integer.MAX_VALUE;
+		
+		if(DP[from][piece] != -1) return DP[from][piece];
+		long minSum = Integer.MAX_VALUE;
+		for(int size = 1; (from+size) <= N; size++) {
+			minSum = Min(minSum, Error(from,from+size)+DP_Solve(from+size,piece-1)  );
+		}
+		DP[from][piece] = minSum;
+		return DP[from][piece];
+	}
 	
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
