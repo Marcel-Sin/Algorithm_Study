@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 
@@ -14,34 +15,41 @@ public class Main {
 	static int MAX_TOWN, DAY, START;
 	static double[][] MAP = new double[50][50];
 	
-	// DP[day][town] 정의 : day번째 날에 town번 마을에 있을 확률
-	static double[][] DP = new double[101][50];
-	
+	static ArrayList<Integer> path = new ArrayList<Integer>(); 
 	static ArrayList<Integer> ANS_LIST = new ArrayList<Integer>(); 
+	
 	
 	public static void main(String[] args) throws IOException {
 		TOTAL = io.inputInt();
 		for(int i = 0; i < TOTAL; i++) {
 			Init();
 			System.out.println();
-			for(int x = 0; x < ANS_LIST.size(); x++) System.out.printf("%.8f ",Solve(DAY,ANS_LIST.get(x)));
+			path.add(START);
+			for(int x = 0; x < ANS_LIST.size(); x++) System.out.printf("%.8f ",Brute_Solve(ANS_LIST.get(x)));
+			path.clear();
 		}
 		
 	}
 
-	static double Solve(int day, int town) {
-		if(DP[day][town] >= 0.0d ) return DP[day][town];
-		if(DP[day-1][town] < 0.0d) Solve(day-1,town);
+	static double Brute_Solve(int target) {
 		
-		Arrays.fill(DP[day], 0.0d);
-		for (int a = 0; a < MAX_TOWN; a++) {
-			if(DP[day-1][a] == 0.0d) continue;
-			double base = DP[day-1][a];
-			
-			for (int b = 0; b < MAX_TOWN; b++) DP[day][b] += base*MAP[a][b];
-			
+		int cur = path.get(path.size()-1);
+		if(path.size() == DAY+1) {
+			if(cur != target) return 0.0;
+			double prob = 1.0d;
+			for(int i = 0; i < path.size()-1; i++) prob *= MAP[path.get(i)][path.get(i+1)];
+			return prob;
 		}
-		return DP[day][town];
+		
+		double ret = 0.0;
+		for(int next = 0; next < MAX_TOWN; next++) {
+			if(MAP[cur][next] > 0.0) {
+				path.add(next);
+				ret += Brute_Solve(target);
+				path.remove(path.size()-1);
+			}
+		}
+		return ret;
 	}
 	
 	
@@ -52,8 +60,6 @@ public class Main {
 		DAY = nextInt(stk);
 		START = nextInt(stk);
 		int num,path;
-		for (int i = 0; i < DP.length; i++) Arrays.fill(DP[i], -1.0d);
-		
 		for(int i = 0; i < MAX_TOWN; i++) {
 			path = 0;
 			stk = new StringTokenizer(io.inputStr());
@@ -64,9 +70,6 @@ public class Main {
 			}
 			for(int x = 0; x < MAX_TOWN; x++) MAP[i][x] /= path; 
 		}
-		// DP Day 1 설정
-		for(int i = 0; i < MAX_TOWN; i++) DP[1][i] = MAP[START][i];
-		
 		ANS_LIST.clear();
 		io.inputInt();
 		stk = new StringTokenizer(io.inputStr());
