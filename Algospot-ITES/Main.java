@@ -8,67 +8,94 @@ import java.util.StringTokenizer;
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static int TOTAL;
-	static long SIGNAL;
-	static int SIGNAL_NUMBER;
 	static long DIVIDER = 2l << 31l;
 	static int K,N;
-   static My_Queue QUEUE = new My_Queue(5000001);
+	static long LAST_SIGNAL;
+	static long AFTER_SIGNAL;
+	static short[] SIGNALS = new short[10000000];
+	static My_Queue queue = new My_Queue(5000001);
 	
 	public static void main(String[] args) throws IOException {
 		TOTAL = io.inputInt();
+		Create_Signal(10000000);
 		for (int i = 0; i < TOTAL; i++) {
 			Init();
-			long start = System.currentTimeMillis();
-			int ans = Solve();
-			long end = System.currentTimeMillis();
-			System.out.printf("%d\n",ans);
+			if( N < 10000000) System.out.println(Slide_Window_Solve());
+			else System.out.println(Queue_Solve());
 		}
 	}
 
-	static int Solve() {
+	static int Queue_Solve() {
 		
-		int sum = 0, count = 0, num = 0;
-		QUEUE.Enqueue(1983);
-		sum = 1983;
+		int sum = 0, count = 0, num = 0, right = 1;
+		queue.Enqueue(1984);
+		sum = 1984;
 		while(true) {
 			if(sum == K) count++;
 			
-			if(SIGNAL_NUMBER < N && sum <= K) {
-				num = Next_Signal();
-				QUEUE.Enqueue(num);
+			if(right < N && sum <= K) {
+				num = Next_Signal(right++);
+				queue.Enqueue(num);
 				sum += num;
 			}
 			else if(sum > K){
-				num = QUEUE.Dequeue();
+				num = queue.Dequeue();
 				sum -= num;
 			}
 			
-			if(SIGNAL_NUMBER == N && sum < K) {
+			if(right == N && sum < K) {
 				break;
 			}
+		}
+		queue.Clean();
+		return count;
+	}
+	
+	static int Slide_Window_Solve() {
+		int left = 0, right = 1, sum = 0, count = 0;
+		sum = 1984;
+		while(true) {
+			if(sum == K) count++;
+			
+			if(right < N && sum <= K) {
+				sum += SIGNALS[right++];
+			}
+			else if(sum > K) {
+				sum -= SIGNALS[left++];
+			}
+			
+			if(right == N && sum < K) break;
 		}
 		return count;
 	}
 	
 	
 
-	static int Next_Signal() {
-		SIGNAL_NUMBER++;
-		SIGNAL = (SIGNAL * 214013 + 2531011) % DIVIDER;
-		return (int)(SIGNAL % 10000 + 1);
+	static void Create_Signal(int n) {
+		long signal = 1983;
+		
+		for(int i = 0; i < n; i++) {
+			SIGNALS[i] = (short)(signal % 10000 + 1);
+			signal = (signal * 214013 + 2531011) % DIVIDER;
+		}
+		LAST_SIGNAL = signal;
+	}
+	
+	static int Next_Signal(int n) {
+		if(n < 10000000) return SIGNALS[n];
+		
+		AFTER_SIGNAL = (AFTER_SIGNAL* 214013 + 2531011) % DIVIDER;
+		return (int)(AFTER_SIGNAL % 10000 + 1);
 	}
 	
 	static void Init() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		K = nextInt(stk);
 		N = nextInt(stk);
-		
-		SIGNAL = 1983;
-		SIGNAL_NUMBER = 1;
-		QUEUE.Clean();
+		AFTER_SIGNAL = LAST_SIGNAL;
 	}
 	
-	
+
 	static class My_Queue {
 		int head, tail, count, size;
 		int[] arr;
@@ -118,6 +145,7 @@ public class Main {
 			count = 0;
 		}
 	}
+	
 	
 	
 	// ===================== functions for PS =====================
