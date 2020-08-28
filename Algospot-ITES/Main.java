@@ -20,52 +20,28 @@ public class Main {
 		Create_Signal(10000000);
 		for (int i = 0; i < TOTAL; i++) {
 			Init();
-			if( N < 10000000) System.out.println(Slide_Window_Solve());
-			else System.out.println(Queue_Solve());
+			System.out.println(Queue_Solve());
 		}
 	}
 
 	static int Queue_Solve() {
 		
-		int sum = 0, count = 0, num = 0, right = 1;
-		queue.Enqueue(1984);
-		sum = 1984;
-		while(true) {
-			if(sum == K) count++;
+		int sum = 0, count = 0, num = 0,idx = 0;
 			
-			if(right < N && sum <= K) {
-				num = Next_Signal(right++);
+		while(true) {
+			while(sum < K && idx < N) {
+				num = Next_Signal(idx++);
 				queue.Enqueue(num);
 				sum += num;
 			}
-			else if(sum > K){
-				num = queue.Dequeue();
-				sum -= num;
-			}
-			
-			if(right == N && sum < K) {
-				break;
-			}
-		}
-		queue.Clean();
-		return count;
-	}
-	
-	static int Slide_Window_Solve() {
-		int left = 0, right = 1, sum = 0, count = 0;
-		sum = 1984;
-		while(true) {
 			if(sum == K) count++;
 			
-			if(right < N && sum <= K) {
-				sum += SIGNALS[right++];
-			}
-			else if(sum > K) {
-				sum -= SIGNALS[left++];
-			}
+			if(sum >= K) sum -= queue.Dequeue();
 			
-			if(right == N && sum < K) break;
+			if(sum < K && idx == N) break;
 		}
+		
+		queue.Clean();
 		return count;
 	}
 	
