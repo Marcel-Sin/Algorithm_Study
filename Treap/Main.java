@@ -3,16 +3,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.swing.event.ListSelectionEvent;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
@@ -25,11 +17,12 @@ public class Main {
 		for (int i = 0; i < TOTAL; i++) {
 		}
 		*/
-		
 		TREE = new BBST(10);
-		for(int i = 0; i < 100; i++) {
-			TREE = TREE.Insert(TREE, new BBST(RANDOM.nextInt(10000)));
-		}
+		TREE = TREE.Insert(TREE, new BBST(5));
+		TREE = TREE.Insert(TREE, new BBST(25));
+		TREE = TREE.Insert(TREE, new BBST(18));
+		TREE = TREE.Insert(TREE, new BBST(12));
+		System.out.println(TREE.Count_LessThan(TREE, 0)+"개");
 		Travel(TREE);
 		System.out.println(TREE.size);
 	}
@@ -115,6 +108,57 @@ public class Main {
 			
 		}
 		
+		// 조건 : a트리가 key 왼쪽 트리, b가 key 오른쪽 만족해야 함.
+		public BBST Merge(BBST a, BBST b) {
+			if(a == null) return b;
+			if(b == null) return a;
+			
+			if(a.priority < b.priority) {
+				b.SetLeft(Merge(a,b.left));
+				return b;
+			}
+			else {
+				a.SetRight(Merge(a.right,b));
+				return a;
+			}
+			
+		}
+		
+		
+		public BBST Erase(BBST root, int key) {
+			if(root == null) return root;
+			
+			if(root.contents == key) {
+				BBST ret = Merge(root.left,root.right);
+				return ret;
+			}
+			else if(key < root.contents) {
+				root.SetLeft(Erase(root.left,key));
+				return root;
+			}
+			else root.SetRight(Erase(root.right,key));
+			return root;
+		}
+		
+		public BBST k_th(BBST root, int k) {
+			int leftSize = 0;
+			if(root.left != null) leftSize = root.left.size;
+			
+			if(k <= leftSize ) return k_th(root.left,k);
+			else if(k == leftSize+1) return root; 
+			else return k_th(root.right,k-leftSize-1);
+		}
+		
+		public int Count_LessThan(BBST root, int key) {
+			if(root == null) return 0;
+			int counter = 0;
+			if(key <= root.contents) return Count_LessThan(root.left, key);
+			else {
+				counter += (root.left != null)? root.left.size:0;
+				counter += 1;
+				return counter + Count_LessThan(root.right, key);
+			}
+		}
 	}
 	
 	// ===================== functions for PS =====================
