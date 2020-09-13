@@ -10,157 +10,161 @@ public class Main {
 	static IO_Manager io = new IO_Manager();
 	static int TOTAL;
 	static Random RANDOM = new Random();
-	static BBST TREE;
+	static B_Tree TREE;
 	public static void main(String[] args) throws IOException {
-		TOTAL = io.inputInt();
-		/*
-		for (int i = 0; i < TOTAL; i++) {
-		}
-		*/
-		TREE = new BBST(10);
-		TREE = TREE.Insert(TREE, new BBST(5));
-		TREE = TREE.Insert(TREE, new BBST(25));
-		TREE = TREE.Insert(TREE, new BBST(18));
-		TREE = TREE.Insert(TREE, new BBST(12));
-		System.out.println(TREE.Count_LessThan(TREE, 0)+"개");
+		TREE = new B_Tree(10);
+		TREE = TREE.Insert(TREE, new B_Tree(66));
+		TREE = TREE.Insert(TREE, new B_Tree(61));
+		TREE = TREE.Insert(TREE, new B_Tree(99));
+		TREE = TREE.Insert(TREE, new B_Tree(3));
+		//TREE = TREE.Remove(TREE, 10);
 		Travel(TREE);
-		System.out.println(TREE.size);
+		System.out.println(TREE.kth(TREE,3).key);
+		System.out.println(TREE.CountLessThan(TREE, 66));
 	}
 	
-	static void Travel(BBST tree) {
-		if(tree == null) return;
+	static void Travel(B_Tree root) {
+		if(root == null) return;
 		
-		Travel(tree.left);
-		System.out.println(tree.contents);
-		Travel(tree.right);
-	}
-	
-	static class BBST_Pair {
-		BBST first;
-		BBST second;
-		
-		public BBST_Pair(BBST f,BBST s) {
-			first = f;
-			second = s;
-		}
+		Travel(root.left);
+		System.out.print(root.key+" ");
+		Travel(root.right);
 		
 	}
 	
-	static class BBST {
-		public int contents;
-		public int priority;
-		public int size = 1;
-		public BBST left = null;
-		public BBST right = null;
-		
-		public BBST(int key) {
-			contents = key;
-			priority = RANDOM.nextInt();
+	static class Pair<T> {
+		public T first,second;
+
+		public Pair(T first, T second) {
+			super();
+			this.first = first;
+			this.second = second;
 		}
 		
-		public void SetRight(BBST tree) {
-			right = tree;
-			Calc_Size();
-		}
-		public void SetLeft(BBST tree) {
-			left = tree;
-			Calc_Size();
-		}
+	}
+	
+	static class B_Tree {
+		int key;
+		int priority;
+		int size;
+		B_Tree left,right;
 		
-		public int Calc_Size() {
+		
+		public B_Tree(int key) {
+			super();
+			this.key = key;
+			this.priority = RANDOM.nextInt();
+			this.left = null;
+			this.right = null;
 			size = 1;
-			if(left != null) size += left.Calc_Size();
-			if(right != null) size += right.Calc_Size();
-			return size;
+		}
+		
+		public void CalcSize() {
+			size = 1;
+			if(left != null) size += left.size;
+			if(right != null) size += right.size;
+		}
+		
+		public void SetRight(B_Tree node) {
+			right = node;
+			CalcSize();
+		}
+		public void SetLeft(B_Tree node) {
+			left = node;
+			CalcSize();
 		}
 		
 		
-		public BBST_Pair Split(BBST root, int key) {
-			if(root == null) return new BBST_Pair(null,null);
+		public Pair<B_Tree> Split(B_Tree root, int key) {
+			if(root == null) return new Pair<B_Tree>(null,null);
 			
-			if(root.contents < key) {
-				BBST_Pair sub = Split(root.right,key);
-				root.SetRight(sub.first);
-				return new BBST_Pair(root,sub.second);
+			if(root.key < key) {
+				Pair<B_Tree> rs = Split(root.right,key);
+				root.SetRight(rs.first);
+				return new Pair<B_Tree>(root,rs.second);
 			}
-			BBST_Pair sub = Split(root.left,key);
-			root.SetLeft(sub.second);
-			return new BBST_Pair(sub.first,root);
+			else {
+				Pair<B_Tree> ls = Split(root.left,key);
+				root.SetLeft(ls.second);
+				return new Pair<B_Tree>(ls.first,root);
+			}
+			
 		}
 		
-		public BBST Insert(BBST root,BBST node) {
+		public B_Tree Insert(B_Tree root, B_Tree node) {
 			if(root == null) return node;
-			
 			if(root.priority < node.priority) {
-				BBST_Pair sub = Split(root, node.contents);
+				Pair<B_Tree> sub = Split(root,node.key);
 				node.SetLeft(sub.first);
 				node.SetRight(sub.second);
 				return node;
 			}
-			else if (node.contents < root.contents) {
-				root.SetLeft(Insert(root.left,node));
-				return root;
-			}
-			else {
+			else if(root.key < node.key) {
 				root.SetRight(Insert(root.right,node));
 				return root;
 			}
-			
+			else {
+				root.SetLeft(Insert(root.left,node));
+				return root;
+			}
 		}
 		
-		// 조건 : a트리가 key 왼쪽 트리, b가 key 오른쪽 만족해야 함.
-		public BBST Merge(BBST a, BBST b) {
+		// a의 최대(이진검색트리 좌측) < b의 최소(우측)
+		public B_Tree Merge(B_Tree a, B_Tree b) {
+			
 			if(a == null) return b;
 			if(b == null) return a;
-			
+		
 			if(a.priority < b.priority) {
-				b.SetLeft(Merge(a,b.left));
+				// b가 루트 되어야 함.
+				B_Tree ret = Merge(a,b.left);
+				b.SetLeft(ret);
 				return b;
 			}
 			else {
-				a.SetRight(Merge(a.right,b));
+				// a가 루트 되어야 함.
+				B_Tree ret = Merge(a.right,b);
+				a.SetRight(ret);
 				return a;
 			}
-			
 		}
 		
-		
-		public BBST Erase(BBST root, int key) {
+		public B_Tree Remove(B_Tree root,int key) {
 			if(root == null) return root;
-			
-			if(root.contents == key) {
-				BBST ret = Merge(root.left,root.right);
+			if(root.key == key) {
+				B_Tree ret = Merge(root.left,root.right);
 				return ret;
 			}
-			else if(key < root.contents) {
-				root.SetLeft(Erase(root.left,key));
+			else if(root.key < key) {
+				root.SetRight(Remove(root.right,key));
 				return root;
 			}
-			else root.SetRight(Erase(root.right,key));
-			return root;
+			else {
+				root.SetLeft(Remove(root.left,key));
+				return root;
+			}
 		}
 		
-		public BBST k_th(BBST root, int k) {
+		public B_Tree kth(B_Tree root,int k) {
 			int leftSize = 0;
 			if(root.left != null) leftSize = root.left.size;
-			
-			if(k <= leftSize ) return k_th(root.left,k);
-			else if(k == leftSize+1) return root; 
-			else return k_th(root.right,k-leftSize-1);
+			if(k <= leftSize) return kth(root.left, k);
+			if(leftSize+1 == k) return root;
+			return kth(root.right,k-leftSize-1);
 		}
 		
-		public int Count_LessThan(BBST root, int key) {
+		public int CountLessThan(B_Tree root, int num) {
 			if(root == null) return 0;
-			int counter = 0;
-			if(key <= root.contents) return Count_LessThan(root.left, key);
+			if(root.key >= num) return CountLessThan(root.left, num);
 			else {
-				counter += (root.left != null)? root.left.size:0;
-				counter += 1;
-				return counter + Count_LessThan(root.right, key);
+				int counter = 0;
+				if(root.left != null) counter = root.left.size;
+				return counter+1+CountLessThan(root.right, num);
 			}
 		}
 	}
 	
+
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
