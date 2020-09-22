@@ -10,164 +10,243 @@ import java.util.StringTokenizer;
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static int TOTAL;
-	static Treap RANK_TREE;
 	static int[] PROBLEM = new int[50000];
 	static int[] ANSWER = new int[50000];
-	static int LEN;
-	
+	static BST tree;
+	static Random rand = new Random();
 	public static void main(String[] args) throws IOException {
+		tree = new BST(0);
+		tree.priority = Integer.MIN_VALUE;
+		
+		
 		TOTAL = io.inputInt();
 		for(int i = 0; i < TOTAL; i++) {
-			Init();
 			Solve();
 		}
-	}
-	
-	static void Solve() {
-		Treap tree = new Treap(1);
-		for(int num = 2; num <= LEN; num++) tree = tree.Insert(tree, new Treap(num));
 		
-		for(int curIdx = LEN-1; curIdx >= 0; curIdx--) {
-			int rank = tree.size-PROBLEM[curIdx];
-			ANSWER[curIdx] = tree.Kth(tree, rank).key;
-			tree = tree.Remove(tree, ANSWER[curIdx]);
-		}
-		Display(ANSWER, LEN);
+
+
+		
+		
 	}
 	
-	
-	static void Init() throws IOException {
+	static void Solve() throws IOException{
 		Arrays.fill(PROBLEM, -1);
 		Arrays.fill(ANSWER, -1);
-		LEN = io.inputInt();
+		int problem_size = io.inputInt();
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		
-		for(int i = 0; stk.hasMoreTokens(); i++) PROBLEM[i] = nextInt(stk);
+		for(int i = 0 ; stk.hasMoreTokens(); i++) {
+			tree.Insert(new BST(i+1));
+			PROBLEM[i] = nextInt(stk);
+		}
+		
+		for(int i = problem_size-1; i >= 0; i--) {
+			int next = tree.kth(tree.left, tree.left.size - PROBLEM[i]);
+			ANSWER[i] = next;
+			tree.Delete(next);
+		}
+		
+		for(int i = 0; i < problem_size; i++) {
+			System.out.print(ANSWER[i]+" ");
+		}
+		System.out.println();
 		
 	}
 	
-	static class Pair<T> {
-		private T first,second;
-
-		public Pair(T first, T second) {
-			super();
-			this.first = first;
-			this.second = second;
-		}
-	}
-	static class Treap {
-		static Random RANDOM = new Random();
-		int key,priority,size;
-		Treap left,right;
-		
-		public Treap(int key) {
+	
+	static class BST {
+		static Random rand = new Random();
+		private int key,priority,size;
+		private BST left,right,parent;
+		public BST(int key) {
 			super();
 			this.key = key;
-			this.priority = RANDOM.nextInt();
+			this.priority = rand.nextInt(100);
 			this.size = 1;
 			this.left = null;
 			this.right = null;
+			this.parent = null;
 		}
-
-		public void RenewSize() {
+		public BST(int key,int p) {
+			super();
+			this.key = key;
+			this.priority = p;
+			this.size = 1;
+			this.left = null;
+			this.right = null;
+			this.parent = null;
+		}
+		
+		
+		public void CalcSize() {
 			size = 1;
 			if(left != null) size += left.size;
 			if(right != null) size += right.size;
-		}	
-		public void SetLeft(Treap node) {
+		}
+		public void SetLeft(BST node) {
 			left = node;
-			RenewSize();
+			CalcSize();
 		}
-		public void SetRight(Treap node) {
+		public void SetRight(BST node) {
 			right = node;
-			RenewSize();
+			CalcSize();
 		}
 		
-		public Pair<Treap> Split(Treap root, int key) {
-			if(root == null) return new Pair<Treap>(null,null);
+		public void Bottom_Up(BST upperNode) {
+			//피벗축이 루트인 경우
+			if(upperNode.parent == null) {
+				this.parent = null;
+				upperNode.parent = this;
+			}
+			//피벗이 루트가 아닌 경우,
+			else {
+				this.parent = upperNode.parent;
+				
+				//부모 쪽도 새로운 서브를 연결
+				if(upperNode.parent.left == upperNode) upperNode.parent.SetLeft(this);	
+				else if(upperNode.parent.right == upperNode) upperNode.parent.SetRight(this);
+				
+				upperNode.parent = this;
+			}
 			
-			//최소근사점을 찾기 위해 오른쪽 서브로 간다.
-			if(root.key < key) {
-				Pair<Treap> rs = Split(root.right,key);
-				root.SetRight(rs.first);
-				return new Pair<Treap>(root, rs.second);
-			}
-			//최대근사점을 찾기 위해 왼쪽 서브로 간다.
-			else {
-				Pair<Treap> ls = Split(root.left, key);
-				root.SetLeft(ls.second);
-				return new Pair<Treap>(ls.first, root);
-			}
 		}
-		public Treap Insert(Treap root, Treap node) {
-			if(root == null) return node;
-			if(root.priority < node.priority) {
-				Pair<Treap> sub = Split(root,node.key);
-				node.SetLeft(sub.first);
-				node.SetRight(sub.second);
-				return node;
-			}
-			if(root.key < node.key) {
-				root.SetRight(Insert(root.right,node));
-				return root;
-			}
-			else {
-				root.SetLeft(Insert(root.left,node));
-				return root;
-			}
-		}
-		// max(A) < min(B) 이진트리 좌측,우측 가능할 때,
-		public Treap Merge(Treap A,Treap B) {
-			if(A == null) return B;
-			if(B == null) return A;
+
+		public BST Rotate_Left() {
+			if(this.right == null) return this;
+			BST newRoot = this.right;
 			
-			if(A.priority < B.priority) {
-				Treap newLeft = Merge(A,B.left);
-				B.SetLeft(newLeft);
-				return B;
+			if(newRoot.left != null) {
+				this.SetRight(newRoot.left);
+				newRoot.left.parent = this;
 			}
-			else {
-				Treap newRight = Merge(A.right,B);
-				A.SetRight(newRight);
-				return A;
+			else this.SetRight(null);
+			
+			newRoot.SetLeft(this);
+			
+			
+			newRoot.Bottom_Up(this);
+			return newRoot;
+		}
+		public BST Rotate_Right() {
+			if(this.left == null) return this;
+			BST newRoot = this.left;
+			
+			if(newRoot.right != null) {
+				this.SetLeft(newRoot.right);
+				newRoot.right.parent = this;
+			}
+			else this.SetLeft(null);
+			
+			newRoot.SetRight(this);
+			
+			newRoot.Bottom_Up(this);
+			return newRoot;
+		}
+
+		// 1: 이진트리의 규칙을 지킨다.
+		// 2: 힙의 조건을 만족할때까지 로테이션 한다.
+		public void Insert(BST node) {
+			
+			BST _parent = this.left;
+			
+			// [예외] 루트로 처음 삽입 시,
+			if(_parent == null) {
+				node.parent = this;
+				this.SetLeft(node);
+				return;
+			}
+			
+			
+			// [제1조건] node 삽입점 찾고 삽입.
+			while(true) {
+				_parent.size++;
+				if(_parent.key < node.key) {
+					if(_parent.right == null) {
+						_parent.SetRight(node);
+						node.parent = _parent;
+						break;
+					}
+					else {
+						_parent = _parent.right;
+					}
+				}
+				else {
+					if(_parent.left == null) {
+						_parent.SetLeft(node);
+						node.parent = _parent;
+						break;
+					}
+					else {
+						_parent = _parent.left;
+					}
+				}
+			}
+			// 삽입 종료
+			
+			
+			// [제2조건] 완료까지 로테이트 반복
+			while(true) {
+				if(node.parent.priority < 0) break;
+				if(node.priority > _parent.priority) { 	
+					if(node == _parent.left) _parent = _parent.Rotate_Right();
+					else if(node == _parent.right) _parent = _parent.Rotate_Left();
+					node = _parent;
+					_parent = _parent.parent;
+				}
+				else break;
+			}
+
+			
+		}
+
+		public void Delete(int key) {
+			BST node = this.left;
+			
+			while(true) {
+				if(node == null || node.key == key) break;
+				if(node.key < key) node = node.right;
+				else node = node.left;
+			}
+			
+			if(node == null) return;
+			
+			while(true) {
+				if(node.left == null && node.right == null) break;
+				
+				if(node.left != null && node.right != null) {
+					if(node.left.priority < node.right.priority) {
+						node = node.Rotate_Left().left;
+					}
+					else node = node.Rotate_Right().right;
+				}
+				else if(node.left != null) {
+					node = node.Rotate_Right().right;
+				}
+				else {
+					node = node.Rotate_Left().left;
+				}
+			}
+			
+			if(node.parent.right == node) node.parent.SetRight(null);
+			else node.parent.SetLeft(null);
+			
+			BST fixed = node.parent;
+			while(fixed != null) {
+				fixed.CalcSize();
+				fixed = fixed.parent;
 			}
 			
 		}
 		
-		public Treap Remove(Treap root, int key) {
-			if(root == null) return root;
-			if(root.key == key) {
-				root = Merge(root.left,root.right);
-				return root;
-			}
-			else if(root.key < key) {
-				root.SetRight(Remove(root.right,key));
-				return root;
-			}
-			else {
-				root.SetLeft(Remove(root.left,key));
-				return root;
-			}
-		}
-		public Treap Kth(Treap root, int k) {
-			if(root == null) return null;
+		public int kth(BST root,int k) {
+			if(root == null) return 0;
 			int leftSize = 0;
 			if(root.left != null) leftSize = root.left.size;
-			if(k <= leftSize) return Kth(root.left,k);
-			if(k == leftSize+1) return root;
-			else {
-				return Kth(root.right,k-leftSize-1);
-			}
-		}	
-		public int Counting_LessThan(Treap root, int key) {
-			if(root == null) return 0;
-			if(key <= root.key) return Counting_LessThan(root.left, key);
-			else {
-				int leftSize = (root.left != null) ? root.left.size : 0;
-				return leftSize + 1 + Counting_LessThan(root.right, key);
-			}
+			if(k <= leftSize) return kth(root.left,k);
+			else if(k == leftSize+1) return root.key;
+			else return kth(root.right,k-leftSize-1);
 		}
-		
 	}
 	
 	// ===================== functions for PS =====================
