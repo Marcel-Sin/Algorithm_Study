@@ -11,68 +11,60 @@ public class Main {
 	static IO_Manager io = new IO_Manager();
 	static final int NINF = Integer.MIN_VALUE; 
 	static final int INF = Integer.MAX_VALUE; 
-	static int TOTAL,N;
-	static Fenwick_Tree ftree = new Fenwick_Tree(1000000);
+	static int TOTAL,N,ANS;
+	static int[] PROBLEM = new int[50000];
+	static int[] TEMP = new int[50000];
+	
 	
 	public static void main(String[] args) throws IOException {
 		TOTAL = io.inputInt();
 		for (int i = 0; i < TOTAL; i++) {
-			Init_And_Solve();
+			Init();
+			System.out.println(Solve());
 		}
 	}
-	
-	static void Init_And_Solve() throws IOException{
+	static void Init() throws IOException{
 		N = io.inputInt();
-		ftree.Clear();
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int ret = 0;
-		while(stk.hasMoreElements()) {
-			int num = nextInt(stk);
-			ret += ftree.Sum(999999)-ftree.Sum(num);
-			ftree.Update(num, 1);
-		}
-		System.out.println(ret);
+		for (int i = 0; stk.hasMoreTokens(); i++) PROBLEM[i] = nextInt(stk);
 	}
 	
-	static class Fenwick_Tree {
-		int[] data;
-		int size;
-		
-		public Fenwick_Tree(ArrayList<Integer> array) {
-			size = array.size()+1;
-			data = new int[size];
-			for (int i = 0; i < size-1; i++) {
-				Update(i,array.get(i));
-			}
-		}
-		public Fenwick_Tree(int arr_size) {
-			size = arr_size+1;
-			data = new int[size];
-		}
-		
-		public int Sum(int k) {
-			int ret = 0;
-			k++;
-			while(0 < k) {
-				ret += data[k];
-				k &= (k-1); // 111 & X = 110 
-			}
-			return ret;
-		}
-		public void Update(int k, int added_Value) {
-			k++;
-			while(k < size) {
-				data[k] += added_Value;
-				k += (k&-k); // 0001 0010 0100 1000
-			}
-		}
-		public void Clear() {
-			Arrays.fill(data, 0);
-		}
-		
+	static int Solve() {
+		ANS = 0;
+		MergeSort(PROBLEM,TEMP,0,N-1);
+		return ANS;
 	}
 	
-	
+	static void MergeSort(int[] arr, int[] temp, int left, int right) {
+		// Base Condition
+		if(right <= left) return;
+		
+		// Divide
+		int mid = (left+right)/2;
+		
+		//Conquer
+		MergeSort(arr, temp, left, mid);
+		MergeSort(arr, temp, mid+1, right);
+		
+		//Combine
+		int a = left, b = mid+1;
+		
+		for(int i = left; i <= right; i++) {
+			if(mid < a) temp[i] = arr[b++];
+			else if(right < b) temp[i] = arr[a++];
+			else if(arr[a] > arr[b]) {
+				ANS += (mid-a+1);
+				temp[i] = arr[b++];
+			}
+			else temp[i] = arr[a++];
+		}
+		
+		for(int i = left; i <= right; i++) {
+			arr[i] = temp[i];
+		}
+
+	}
+
 
 
 
