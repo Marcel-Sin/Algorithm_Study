@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
@@ -17,14 +18,23 @@ public class Main {
 	static final int INF = Integer.MAX_VALUE; 
 
 	static int TOTAL,N;
-	
+	static HashMap<Integer, Integer> preCalc = new HashMap<Integer, Integer>(); 
 	static Queue<int[]> queue = new LinkedList<int[]>();
+	static int[] problem;
+	static StringBuilder strs = new StringBuilder();
 	
 	public static void main(String[] args) throws IOException {	
+		int[] arr = {0,1,2,3,4,5,6,7};
+		BFS(arr,8);
 		
-		Init();
-		
+		TOTAL = io.inputInt();
+		for (int i = 0; i < TOTAL; i++) {
+			Init();
+			Solve();
+		}
+		System.out.print(strs.toString());
 	}
+	
 	
 	static void Init() throws IOException{
 		// Clear
@@ -32,34 +42,60 @@ public class Main {
 		int[] temp = new int[N];
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		for (int i = 0; stk.hasMoreTokens(); i++) temp[i] = nextInt(stk);
-		
-		System.out.println(BFS(temp,N));
-		
+		problem = temp;
 	}
 	
-	static int BFS(int[] problem,int len) {
-		if (len == 1) return 0;
-		queue.add(problem);
+	static void Solve() {
+		problem = Relative_Array(problem, problem.length);
+		strs.append(preCalc.get(Hashing(problem,8)));
+		strs.append('\n');
+	
+	}
+	
+	static int[] Relative_Array(int[] arr,int len) {
+		int[] ret = {0,1,2,3,4,5,6,7};
+		int smaller;
 		
-		int ret = 0, qsize = 0;
+		for (int s = 0; s < len; s++) {
+			smaller = 0;
+			for (int i = 0; i < len; i++) {
+				if(arr[s] > arr[i]) smaller++;
+			}
+			ret[s] = smaller;
+		}
+		return ret;
+	}
+	static void BFS(int[] problem,int len) {
+		queue.add(problem);
+		preCalc.put(Hashing(problem,len), 0);
+		
+		int counter = 0, qsize = 0,code;
 		int[] origin = problem;
-		while(true) {
+		while(!queue.isEmpty()) {
 			qsize = queue.size();
 			for(int i = 0; i < qsize; i++) {
 				origin = queue.poll();
-				if(IsSorted(origin, len) == true) return ret;
-				for (int o = 1; o < len; o++) {
-					for (int s = 0; s+o < len; s++) {
-						queue.add(Swap_Area(origin,s,o));
+				
+				// 모두 다해봄
+				for(int o = 1; o < len; o++) {
+					for(int s = 0; s+o < len; s++) {
+						Reverse(origin,s,o);
+						code = Hashing(origin,len);
+						if(preCalc.containsKey(code) == false) {
+							preCalc.put(code, counter+1);
+							queue.add(origin.clone());
+						}
+						Reverse(origin,s,o);
 					}
 				}
+				// 다해봄 끝
 			}
-			ret++;
+			counter++;
 		}
 	}
 	
-	static int[] Swap_Area(int[] arr, int start, int offset) {
-		int[] ret = arr.clone();
+	
+	static void Reverse(int[] ret, int start, int offset) {
 		int i = start, j = start+offset, temp = 0;
 		
 		while(i < j) {
@@ -69,7 +105,6 @@ public class Main {
 			i++;
 			j--;
 		}
-		return ret;
 	}
 	static boolean IsSorted(int[] arr,int len) {
 		for(int i = 1; i < len; i++) {
@@ -78,6 +113,15 @@ public class Main {
 		return true;
 	}
 	
+	static int Hashing(int[] arr, int len) {
+		int ret = arr[0];
+		for(int i = 1; i < len; i++) {
+			ret = ret << 3;
+			ret = ret | arr[i];
+			
+		}
+		return ret;
+	}
 
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
