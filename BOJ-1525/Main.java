@@ -3,132 +3,151 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
-
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int target = 123456789;
-	static int input;
-	static HashMap<Integer, Boolean> check = new HashMap<Integer, Boolean>();
-	public static void main(String[] args) throws IOException {
-		StringBuilder sb = new StringBuilder();
-		for(int i = 0; i < 3; i++) {
-			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			for(int j = 0; j < 3; j++) sb.append(stk.nextToken());	
-		}
-		char[] temp = sb.toString().toCharArray();
-		for(int i = 0; i < 9; i++) if(temp[i] == '0') temp[i] = '9';
-		input = Integer.parseInt(new String(temp));
-		
-		if(BFS(input) == false) System.out.println(-1);
-		
-		
-		
-	}	
+	static final int NINF = Integer.MIN_VALUE; 
+	static final int INF = Integer.MAX_VALUE; 
+
+	static int TOTAL;
+	static HashMap<Long, Integer> checkMap = new HashMap<Long, Integer>(); 
+	static Queue<int[][]> queue = new LinkedList<int[][]>();
+	static int[][] problem = new int[3][3]; 
+	static long finish;
+	static int[][] fourDir = {{-1,0},{1,0},{0,-1},{0,1}};
 	
-	static boolean BFS(int start) {
-		Queue<Integer> queue = new LinkedList<Integer>();
-		check.put(start, true);
-		queue.add(start);
-		int counter = 0;
-		int queueSize, row, col, pos,parent;
-		int next;
-		char[] parentChar;
-		while(queue.isEmpty() == false) {
-			queueSize = queue.size();
-			for(int i = 0; i < queueSize; i++) {
-				parent = queue.poll();
-				if(parent == target) {
-					System.out.println(counter);
-					return true;
-				}
-				pos = NinePos(parent);
-				row = pos/3;
-				col = (pos)%3;
-				
-				if(row-1 >= 0) {
-					next = (row-1)*3+col;
-					next = SwapInteger(parent, pos, next);
-					if(check.containsKey(next) == false) {
-						queue.add(next);
-						check.put(next,true);
-					}
-				}
-				if(row+1 < 3) {
-					next = (row+1)*3+col;
-					next = SwapInteger(parent, pos, next);
-					if(check.containsKey(next) == false) {
-						queue.add(next);
-						check.put(next,true);
-					}
-				}
-				if(col-1 >= 0) {
-					next = (row)*3+col-1;
-					next = SwapInteger(parent, pos, next);
-					if(check.containsKey(next) == false) {
-						queue.add(next);
-						check.put(next,true);
-					}
-				}
-				if(col+1 < 3) {
-					next = (row)*3+col+1;
-					next = SwapInteger(parent, pos, next);
-					if(check.containsKey(next) == false) {
-						queue.add(next);
-						check.put(next,true);
-					}
+	
+	
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(BFS());
+		
+	}
+	static void Init() throws IOException{
+		StringTokenizer stk;
+		for(int i = 2; i >= 0; i--) {
+			stk = new StringTokenizer(io.inputStr());
+			for (int j = 0; j < 3; j++) {
+				problem[i][j] = nextInt(stk);
+			}
+		}
+		int[][] ans = {{7,8,0},{4,5,6},{1,2,3}};
+		finish = Array_Hashcode(ans);
+	}
+
+	// 첫시도, 매우 직관적인 방법 2차원 배열 사용
+	static int BFS() {
+		if(Array_Hashcode(problem) == finish) return 0;
+		
+		queue.add(problem);
+		checkMap.put(Array_Hashcode(problem),0);
+		
+		while(!queue.isEmpty()) {
+			int[][] here = queue.poll();
+			int curCost = checkMap.get(Array_Hashcode(here));
+			
+			ArrayList<int[][]> adj = GetAdjacent(here);
+			for(int i = 0; i < adj.size(); i++) {
+				int[][] adjArr = adj.get(i);
+				long arrCode = Array_Hashcode(adjArr);
+				if(checkMap.containsKey(arrCode) == false) {
+					if(arrCode == finish) return curCost+1;
+					checkMap.put(arrCode,curCost+1);
+					queue.add(adjArr);
 				}
 			}
-			counter++;
 		}
-		return false;
-	}
-	
-	static int NinePos(int num) {
-		int Pos=8;
-		while(num != 0) {
-			if(num%10 == 9) return Pos;
-			num /= 10;
-			Pos--;
-		}
+		
 		return -1;
 	}
 	
-	static int SwapInteger(int num,int a, int b) {
-		char[] charNum = String.valueOf(num).toCharArray();
-		char temp = charNum[a];
-		charNum[a] = charNum[b];
-		charNum[b] = temp;
-		return Integer.parseInt(new String(charNum));
+	static long Array_Hashcode(int[][] arr) {
+		long ret = 0;
+		for (int i = 0; i < arr.length; i++) {
+			for (int j = 0; j < arr.length; j++) {
+				ret += arr[i][j];
+				ret = ret << 4;
+			}
+		}
+		return ret;
 	}
 	
+	static ArrayList<int[][]> GetAdjacent(int[][] here) {
+		ArrayList<int[][]> ret = new ArrayList<int[][]>();
+		
+		// 0의 위치 찾기
+		int curR = 0,curC = 0;
+		for (int i = 0; i < here.length; i++) {
+			for (int j = 0; j < here.length; j++) {
+				if(here[i][j] == 0) {
+					curR = i; curC = j;
+					break;
+				}
+			}
+		}
+		
+		for (int k = 0; k < fourDir.length; k++) {
+			int nr = curR+fourDir[k][0], nc = curC+fourDir[k][1];
+			if(nr >= 0 && nc >= 0 && nr < here.length && nc < here.length) {
+				ret.add(Create_Array(here, curR, curC, nr, nc));
+			}
+		}
+		
+		return ret;
+	}
+	
+	static int[][] Create_Array(int[][] here,int curR,int curC, int r, int c) {
+		int[][] ret = new int[here.length][];
+		for(int i = 0; i < ret.length; i++) {
+			ret[i] = here[i].clone();
+		}
+		ret[curR][curC] = here[r][c];
+		ret[r][c] = here[curR][curC];
+		
+		return ret;
+	}
+
+	
+	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		//System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("["+i+"] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
