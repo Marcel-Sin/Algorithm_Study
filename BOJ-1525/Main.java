@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
@@ -27,7 +28,7 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {	
 		Init();
-		System.out.println(Bi_BFS());
+		System.out.println(BFS());
 	}
 	static void Init() throws IOException{
 		StringTokenizer stk;
@@ -45,7 +46,39 @@ public class Main {
 		if(problemCode == finishCode) return 0;
 		
 		queue.add(problemCode);
-		checkMap.put(problemCode, 0);
+		queue.add(finishCode);
+		
+		checkMap.put(problemCode, 1);
+		checkMap.put(finishCode, -1);
+		
+		
+		long hereCode,adjCode;
+		int hereCost,adjCost=0;
+		while(!queue.isEmpty()) {
+			hereCode = queue.poll();
+			hereCost = checkMap.get(hereCode);
+			
+			ArrayList<Long> adj = GetAdjacent(hereCode);
+			for(int i = 0; i < adj.size(); i++) {
+				adjCode = adj.get(i);
+				adjCost = checkMap.getOrDefault(adjCode, 0);
+				if(adjCost == 0) {
+					if(hereCost > 0) checkMap.put(adjCode, hereCost+1);
+					else checkMap.put(adjCode, hereCost-1);
+					queue.add(adjCode);
+				}
+				else if(sgn(hereCost) != sgn(adjCost)) {
+					return abs(hereCost) + abs(adjCost) - 1;
+				}
+			}
+		}
+		return -1;
+	}
+	static int BFS() {
+		if(problemCode == finishCode) return 0;
+		
+		queue.add(finishCode);
+		checkMap.put(finishCode, 0);
 		
 		long hereCode,adjCode;
 		int hereCost;
@@ -57,7 +90,7 @@ public class Main {
 			for(int i = 0; i < adj.size(); i++) {
 				adjCode = adj.get(i);
 				if(checkMap.containsKey(adjCode) == false) {
-					if(adjCode == finishCode) return hereCost+1;
+					if(adjCode == problemCode) return hereCost+1;
 					queue.add(adjCode);
 					checkMap.put(adjCode, hereCost+1);
 				}
@@ -66,6 +99,15 @@ public class Main {
 		return -1;
 	}
 
+	static int abs(int n) {
+		if(n >= 0) return n;
+		else return n*(-1);
+	}
+	static int sgn(int n) {
+		if(n >= 0) return 1;
+		else return -1;
+	}
+	
 	static long ArrayToHash(int[][] arr) {
 		long ret = 0;
 		for (int i = 0; i < arr.length; i++) {
