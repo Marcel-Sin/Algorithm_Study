@@ -16,103 +16,122 @@ public class Main {
 
 	static int TOTAL;
 	static HashMap<Long, Integer> checkMap = new HashMap<Long, Integer>(); 
-	static Queue<int[][]> queue = new LinkedList<int[][]>();
-	static int[][] problem = new int[3][3]; 
-	static long finish;
-	static int[][] fourDir = {{-1,0},{1,0},{0,-1},{0,1}};
+	static Queue<Long> queue = new LinkedList<Long>();
+	static int[][] problem = new int[3][3];
+	static int[][] finish = {{1,2,3},{4,5,6},{7,8,0}};
+	static long problemCode,finishCode;
+	static int[][] dir = {{-1,0},{1,0},{0,-1},{0,1}};
 	
 	
 	
 	
 	public static void main(String[] args) throws IOException {	
 		Init();
-		System.out.println(BFS());
-		
+		System.out.println(Bi_BFS());
 	}
 	static void Init() throws IOException{
 		StringTokenizer stk;
-		for(int i = 2; i >= 0; i--) {
+		for(int i = 0; i < 3; i++) {
 			stk = new StringTokenizer(io.inputStr());
 			for (int j = 0; j < 3; j++) {
 				problem[i][j] = nextInt(stk);
 			}
 		}
-		int[][] ans = {{7,8,0},{4,5,6},{1,2,3}};
-		finish = Array_Hashcode(ans);
+		
+		problemCode = ArrayToHash(problem);
+		finishCode = ArrayToHash(finish);
 	}
-
-	// 첫시도, 매우 직관적인 방법 2차원 배열 사용
-	static int BFS() {
-		if(Array_Hashcode(problem) == finish) return 0;
+	static int Bi_BFS() {
+		if(problemCode == finishCode) return 0;
 		
-		queue.add(problem);
-		checkMap.put(Array_Hashcode(problem),0);
+		queue.add(problemCode);
+		checkMap.put(problemCode, 0);
 		
+		long hereCode,adjCode;
+		int hereCost;
 		while(!queue.isEmpty()) {
-			int[][] here = queue.poll();
-			int curCost = checkMap.get(Array_Hashcode(here));
+			hereCode = queue.poll();
+			hereCost = checkMap.get(hereCode);
 			
-			ArrayList<int[][]> adj = GetAdjacent(here);
+			ArrayList<Long> adj = GetAdjacent(hereCode);
 			for(int i = 0; i < adj.size(); i++) {
-				int[][] adjArr = adj.get(i);
-				long arrCode = Array_Hashcode(adjArr);
-				if(checkMap.containsKey(arrCode) == false) {
-					if(arrCode == finish) return curCost+1;
-					checkMap.put(arrCode,curCost+1);
-					queue.add(adjArr);
+				adjCode = adj.get(i);
+				if(checkMap.containsKey(adjCode) == false) {
+					if(adjCode == finishCode) return hereCost+1;
+					queue.add(adjCode);
+					checkMap.put(adjCode, hereCost+1);
 				}
 			}
 		}
-		
 		return -1;
 	}
-	
-	static long Array_Hashcode(int[][] arr) {
+
+	static long ArrayToHash(int[][] arr) {
 		long ret = 0;
 		for (int i = 0; i < arr.length; i++) {
 			for (int j = 0; j < arr.length; j++) {
-				ret += arr[i][j];
+				ret = ret | arr[i][j];
 				ret = ret << 4;
 			}
 		}
+		ret = ret >>> 4;
 		return ret;
 	}
 	
-	static ArrayList<int[][]> GetAdjacent(int[][] here) {
-		ArrayList<int[][]> ret = new ArrayList<int[][]>();
+	static ArrayList<Long> GetAdjacent(long hereCode) {
+		ArrayList<Long> ret = new ArrayList<Long>();
+		int curR, curC;
+		int zeroPos = GetPos(hereCode, 0);
+		curR = zeroPos/3; curC = zeroPos%3;
 		
-		// 0의 위치 찾기
-		int curR = 0,curC = 0;
-		for (int i = 0; i < here.length; i++) {
-			for (int j = 0; j < here.length; j++) {
-				if(here[i][j] == 0) {
-					curR = i; curC = j;
-					break;
-				}
+		for (int i = 0; i < 4; i++) {
+			int nr = curR+dir[i][0];
+			int nc = curC+dir[i][1];
+			if(nr >= 0 && nc >= 0 && nr < 3 && nc < 3) {
+				long nextCode = SwapPos(hereCode,curR,curC,nr,nc);
+				ret.add(nextCode);
 			}
 		}
-		
-		for (int k = 0; k < fourDir.length; k++) {
-			int nr = curR+fourDir[k][0], nc = curC+fourDir[k][1];
-			if(nr >= 0 && nc >= 0 && nr < here.length && nc < here.length) {
-				ret.add(Create_Array(here, curR, curC, nr, nc));
-			}
-		}
-		
 		return ret;
 	}
-	
-	static int[][] Create_Array(int[][] here,int curR,int curC, int r, int c) {
-		int[][] ret = new int[here.length][];
-		for(int i = 0; i < ret.length; i++) {
-			ret[i] = here[i].clone();
-		}
-		ret[curR][curC] = here[r][c];
-		ret[r][c] = here[curR][curC];
+	static long SwapPos(long code, int r, int c, int swapR, int swapC) {
+		int pos = r*3+c, pos2 = swapR*3+swapC;
+		int temp = GetNum(code, pos);
+		code = SetNum(code, GetNum(code, pos2), pos);
+		code = SetNum(code, temp, pos2);
 		
-		return ret;
+		return code;
 	}
 
+	static long SetNum(long code, int num, int pos) {
+		int shifter = (8-pos)*4;
+		//Bits Clear
+		long temp = (long)0b1111 << shifter;
+		temp = ~temp;
+		code = temp & code;
+		
+		//Set Bits
+		temp = (long)num << shifter;
+		code = temp | code;
+		return code;
+	}
+	static int GetNum(long code,int pos) {
+		int shift = (8-pos)*4;
+		long temp = (long)0b1111 << shift;
+		temp = temp & code;
+		temp = temp >> shift;
+		return (int)temp;
+	}
+	static int GetPos(long code,int num) {
+		for (int i = 8; i >=  0; i--) {
+			if( (code & 0b1111) == num) return i;
+			code = code >> 4;
+		}
+		return -1;
+	}
+
+	
+	
 	
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
