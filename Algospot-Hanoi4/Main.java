@@ -17,8 +17,8 @@ public class Main {
 	
 	static int TOTAL;
 	
-	// checkMap <Hanoi4Data, Distance>
-	static HashMap<Integer, Integer> checkMap = new HashMap<Integer, Integer>();
+	// checker[Hanoi4Data] = Distance,  Space Complexity = 16,777,216;
+	static short[] checker = new short[16777216+1];
 	static Queue<Integer> queue = new LinkedList<Integer>();
 	static int[] TWO_BIT_ACCESS = new int[16];
 	static int problemSize,problemData, finishData;
@@ -29,20 +29,21 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {	
 		TOTAL = io.inputInt();
+		//Initializing for 2-bits indexing
+		int num = 0b11;
+		for (int i = 0; i < TWO_BIT_ACCESS.length; i++) {
+			TWO_BIT_ACCESS[i] = num;
+			num = num << 2;
+		}
+		
 		for (int i = 0; i < TOTAL; i++) {
 			Init();
-			System.out.println(BFS());
+			System.out.println(Bi_BFS());
 		}
 	}
 	static void Init() throws IOException{
 		queue.clear();
-		checkMap.clear();
-		//Initializing for 2-bits indexing
-		int num = 0b11;
-		for (int i = TWO_BIT_ACCESS.length-1; i >= 0; i--) {
-			TWO_BIT_ACCESS[i] = num;
-			num = num << 2;
-		}
+		Arrays.fill(checker, (short)0);
 		problemSize = io.inputInt();
 		
 		// Creating binary-datas for PS 
@@ -60,26 +61,32 @@ public class Main {
 		}
 		
 	}
-	static int BFS() {
+	static int Bi_BFS() {
 		queue.add(problemData);
-		checkMap.put(problemData, 0);
+		queue.add(finishData);
+		checker[problemData] = 1;
+		checker[finishData] = -1;
 		
 		while(!queue.isEmpty()) {
 			int here = queue.poll();
-			
+			int hereCost = checker[here];
 			int[] adj = GetAdj(here);
 			for (int i = 0; i < adj.length; i++) {
 				if(adj[i] == -1) break;
-				if(checkMap.containsKey(adj[i]) == false) {
-					if(adj[i] == finishData) return checkMap.get(here)+1;
-					checkMap.put(adj[i],checkMap.get(here)+1);
+				if(checker[adj[i]] == 0) {
+					if(hereCost > 0) checker[adj[i]] = (short)(hereCost+1);
+					else checker[adj[i]] = (short)(hereCost-1);
 					queue.add(adj[i]);
+				}
+				else if(Integer.signum(hereCost) != Integer.signum(checker[adj[i]]) ) {
+					return Math.abs(hereCost) + Math.abs(checker[adj[i]]) - 1;
 				}
 			}
 		}
 		
 		return -1;
 	}
+	
 	
 	static int[] GetAdj(int data){
 		Arrays.fill(mem, -1);
@@ -114,7 +121,8 @@ public class Main {
 	
 	// 2비트 단위로 데이터를 가져온다.
 	static int Get_2Bits(int data, int idx) {
-		return (data & TWO_BIT_ACCESS[idx]) >>> (30-2*idx);
+		
+		return (data & TWO_BIT_ACCESS[idx]) >>> (2*idx);
 	}
 	// 2비트 단위로 데이터를 저장한다.
 	static int Set_2Bits(int data, int idx, int value) {
@@ -122,7 +130,7 @@ public class Main {
 		// 해당 Data의 자리를 0으로 만든다.
 		data = data & (~TWO_BIT_ACCESS[idx]);
 		// 넣을 데이터의 자리를 맞춘다.
-		value = value << (30-2*idx);
+		value = value << (2*idx);
 		
 		// 넣고 반환
 		return data | value;
