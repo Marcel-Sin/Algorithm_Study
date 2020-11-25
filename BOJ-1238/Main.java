@@ -19,7 +19,9 @@ public class Main {
 	static int N,M,X;
 	
 	//adj[vertex].get(there) = vertex-there weight
-	static ArrayList<Pair>[] adj = new ArrayList[MAX_VERTEX];
+	static ArrayList<Pair>[] right_adj = new ArrayList[MAX_VERTEX];
+	static ArrayList<Pair>[] reverse_adj = new ArrayList[MAX_VERTEX];
+	
 	static PriorityQueue<Pair> pq = new PriorityQueue<Pair>((a,b) -> {
 		if(a.second == b.second) return 0;
 		else return (a.second < b.second) ? -1:1;
@@ -35,17 +37,8 @@ public class Main {
 	static int Solve() {
 		int ret = 0;
 		
-		
-		int[] toX = new int[N];
-		int[] fromX = Dijkstra(X);
-		
-		for (int i = 0; i < N; i++) {
-			if(i == X) continue;
-			else {
-				int[] temp = Dijkstra(i);
-				toX[i] = temp[X];
-			}
-		}
+		int[] fromX = Dijkstra(X,right_adj);
+		int[] toX = Dijkstra(X,reverse_adj);
 		
 		for (int i = 0; i < N; i++) {
 			if(X != i)ret = Max(ret, fromX[i]+toX[i]);
@@ -55,7 +48,7 @@ public class Main {
 	}
 	
 	
-	static int[] Dijkstra(int start) {
+	static int[] Dijkstra(int start, ArrayList<Pair>[] adj) {
 		Arrays.fill(dist, INF);
 		dist[start] = 0;
 		// Pair<Vertex, Cost>
@@ -84,7 +77,10 @@ public class Main {
 	
 	
 	static void Init() throws IOException{
-		for (int i = 0; i < MAX_VERTEX; i++) adj[i] = new ArrayList<Pair>();
+		for (int i = 0; i < MAX_VERTEX; i++) {
+			right_adj[i] = new ArrayList<Pair>();
+			reverse_adj[i] = new ArrayList<Pair>();
+		}
 		
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		N = nextInt(stk);
@@ -100,7 +96,8 @@ public class Main {
 	}
 	
 	static void Connect(int a, int b,int w) {
-		adj[a].add(new Pair(b,w));
+		right_adj[a].add(new Pair(b,w));
+		reverse_adj[b].add(new Pair(a,w));
 	}
 	static class Pair {
 		int first, second;
