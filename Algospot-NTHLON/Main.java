@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.StringTokenizer;
@@ -45,11 +46,16 @@ public class Main {
 		M = io.inputInt();
 		for (int i = 0; i < graph.length; i++) graph[i].clear();
 		data.clear();
-		
+		HashMap<Integer, Integer> c = new HashMap<Integer, Integer>();
 		for (int i = 0; i < M; i++) {
 			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			data.add(new Data(nextInt(stk),nextInt(stk)));
+			int a = nextInt(stk);
+			int b = nextInt(stk);
+			
+			if (c.containsKey(a-b) == false) c.put(a-b, a);
+			else if (c.containsKey(a-b) && c.get(a-b) > a) c.put(a-b, a);
 		}
+		for(int key : c.keySet()) data.add(new Data(c.get(key),key));
 		
 		for (int v = -200; v <= 200; v++) {
 			for(int i = 0; i < data.size(); i++) {
@@ -105,13 +111,12 @@ public class Main {
 		
 	}	
 	static class Data {
-		public int a,b,dif;
+		public int a,dif;
 
 		public Data(int a, int b) {
 			super();
 			this.a = a;
-			this.b = b;
-			dif = a-b;
+			dif = b;
 		}
 		
 	}
