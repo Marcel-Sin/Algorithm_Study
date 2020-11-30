@@ -20,7 +20,7 @@ public class Main {
 	static ArrayList<Adjacent>[] GRAPH = new ArrayList[MAX_VERTEX];
 	static int[] minDist = new int[MAX_VERTEX];
 	static int[] maxDist = new int[MAX_VERTEX];
-	
+	static boolean[][] path = new boolean[MAX_VERTEX][MAX_VERTEX];
 	
 	public static void main(String[] args) throws IOException{
 		for (int i = 0; i < GRAPH.length; i++) GRAPH[i] = new ArrayList<Main.Adjacent>(); 
@@ -36,7 +36,11 @@ public class Main {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		V = nextInt(stk);
 		E = nextInt(stk);
-		for (int i = 0; i < GRAPH.length; i++) GRAPH[i].clear();
+		for (int i = 0; i < GRAPH.length; i++) {
+			GRAPH[i].clear();
+			Arrays.fill(path[i], false);
+		}
+		
 		
 		for (int i = 0; i < E; i++) {
 			stk = new StringTokenizer(io.inputStr());
@@ -47,7 +51,7 @@ public class Main {
 	}
 	
 	static void Solve() {
-		boolean[] check = Bellman(0,GRAPH,V);
+		boolean[] check = Bellman(0,1,GRAPH,V);
 		if(check[0] == true && minDist[1] == INF) {
 			System.out.println("UNREACHABLE");
 			return;
@@ -61,7 +65,7 @@ public class Main {
 		System.out.println();
 	}
 	
-	static boolean[] Bellman(int start, ArrayList<Adjacent>[] graph, int graphSize) {
+	static boolean[] Bellman(int start, int dest,ArrayList<Adjacent>[] graph, int graphSize) {
 		boolean[] ret = new boolean[2];
 		
 		Arrays.fill(minDist, INF);
@@ -90,18 +94,39 @@ public class Main {
 					}
 				}
 			}
-			//graphSize - 1 회까지가 정상. 1회 더 업데이트 되면 Null			
-			if(min_Updated == false) ret[0] = true;
-			if(max_Updated == false) ret[1] = true;
+			if(!min_Updated) ret[0] = true;
+			if(!max_Updated) ret[1] = true;
 		}
+		// 추가로 업데이트가 발생하려하면 정점 v는 1로 가는 중 무한 사이클에 포함되어 있다.
+		
+		min_Updated = false;
+		max_Updated = false;
+		for (int v = 0; v < graphSize; v++) {
+			for (int i = 0; i < graph[v].size(); i++) {
+				there = graph[v].get(i).a;
+				thereCost = graph[v].get(i).b;
+				if(minDist[v] != INF && minDist[v] + thereCost < minDist[there]) {
+					if(path[start][v] && path[v][dest]) min_Updated = true;
+				}
+				if(maxDist[v] != NINF && maxDist[v] + thereCost > maxDist[there]) {
+					if(path[start][v] && path[v][dest]) max_Updated = true;
+				}
+			}
+		}
+		
 		if(min_Updated == true) ret[0] = false;
+		else ret[0] = true;
 		if(max_Updated == true) ret[1] = false;
+		else ret[1] = true;
 		
 		return ret;
 	}
 	
 	static void Connect(int a, int b, int w) {
 		GRAPH[a].add(new Adjacent(b,w));
+		path[a][b] = true;
+		for (int i = 0; i < V; i++) if(path[i][a] == true) path[i][b] = true;  
+		
 	}
 	static class Adjacent {
 		public int a,b;
