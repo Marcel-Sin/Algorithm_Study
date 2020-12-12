@@ -8,163 +8,136 @@ import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE/4;
+	static final int INF = Integer.MAX_VALUE/4;
+
 	static int TOTAL;
-	static Random RANDOM = new Random();
-	static B_Tree TREE;
-	public static void main(String[] args) throws IOException {
-		TREE = new B_Tree(10);
-		TREE = TREE.Insert(TREE, new B_Tree(66));
-		TREE = TREE.Insert(TREE, new B_Tree(61));
-		TREE = TREE.Insert(TREE, new B_Tree(99));
-		TREE = TREE.Insert(TREE, new B_Tree(3));
-		//TREE = TREE.Remove(TREE, 10);
-		Travel(TREE);
-		System.out.println(TREE.kth(TREE,3).key);
-		System.out.println(TREE.CountLessThan(TREE, 66));
-	}
 	
-	static void Travel(B_Tree root) {
+	static Random rand = new Random();
+	public static void main(String[] args) throws IOException{
+		Node tree = new Node(10);
+		tree = tree.Insert(tree, new Node(7));
+		tree = tree.Insert(tree, new Node(13));
+		tree = tree.Insert(tree, new Node(17));
+		tree = tree.Insert(tree, new Node(15));
+		tree = tree.Insert(tree, new Node(9));
+		tree = tree.Insert(tree, new Node(8));
+		tree = tree.Insert(tree, new Node(10));
+		tree = tree.Insert(tree, new Node(6));
+		tree = tree.Insert(tree, new Node(3));
+		tree = tree.Erase(tree, 13);
+		LMR(tree);
+		
+		System.out.println(tree.Kth(tree,1).key);
+		System.out.println(tree.Kth(tree,9).key);
+	}
+
+	static void LMR(Node root) {
 		if(root == null) return;
 		
-		Travel(root.left);
-		System.out.print(root.key+" ");
-		Travel(root.right);
-		
+		LMR(root.left);
+		System.out.println(root.key);
+		LMR(root.right);
 	}
 	
-	static class Pair<T> {
-		public T first,second;
-
-		public Pair(T first, T second) {
-			super();
-			this.first = first;
-			this.second = second;
-		}
+	static class Node {
+		public int key,size,priority;
+		public Node left, right;
 		
-	}
-	
-	static class B_Tree {
-		int key;
-		int priority;
-		int size;
-		B_Tree left,right;
-		
-		
-		public B_Tree(int key) {
+		public Node(int key) {
 			super();
 			this.key = key;
-			this.priority = RANDOM.nextInt();
-			this.left = null;
-			this.right = null;
+			this.size = 1;
+			left = null;
+			right = null;
+			priority = rand.nextInt();
+		}
+		
+		public int Calc() {
 			size = 1;
+			if(left != null) size += left.Calc();
+			if(right != null) size += right.Calc();
+			return size;
+		}
+		public void SetLeft(Node node) {
+			left = node; Calc();
+		}
+		public void SetRight(Node node) {
+			right = node; Calc();
 		}
 		
-		public void CalcSize() {
-			size = 1;
-			if(left != null) size += left.size;
-			if(right != null) size += right.size;
-		}
-		
-		public void SetRight(B_Tree node) {
-			right = node;
-			CalcSize();
-		}
-		public void SetLeft(B_Tree node) {
-			left = node;
-			CalcSize();
-		}
-		
-		
-		public Pair<B_Tree> Split(B_Tree root, int key) {
-			if(root == null) return new Pair<B_Tree>(null,null);
+		public Pair Split(Node root, int key) {
+			if(root == null) return new Pair(null,null);
 			
 			if(root.key < key) {
-				Pair<B_Tree> rs = Split(root.right,key);
-				root.SetRight(rs.first);
-				return new Pair<B_Tree>(root,rs.second);
+				Pair pair = Split(root.right,key);
+				root.SetRight(pair.a);
+				return new Pair(root,pair.b);
 			}
 			else {
-				Pair<B_Tree> ls = Split(root.left,key);
-				root.SetLeft(ls.second);
-				return new Pair<B_Tree>(ls.first,root);
+				Pair pair = Split(root.left,key);
+				root.SetLeft(pair.b);
+				return new Pair(pair.a,root);
 			}
-			
 		}
-		
-		public B_Tree Insert(B_Tree root, B_Tree node) {
+		public Node Insert(Node root, Node node) {
 			if(root == null) return node;
+			
 			if(root.priority < node.priority) {
-				Pair<B_Tree> sub = Split(root,node.key);
-				node.SetLeft(sub.first);
-				node.SetRight(sub.second);
+				Pair pair = Split(root,node.key);
+				node.SetLeft(pair.a);
+				node.SetRight(pair.b);
 				return node;
 			}
-			else if(root.key < node.key) {
-				root.SetRight(Insert(root.right,node));
-				return root;
-			}
-			else {
-				root.SetLeft(Insert(root.left,node));
-				return root;
-			}
+			if(root.key < node.key) root.SetRight(Insert(root.right,node));
+			else root.SetLeft(Insert(root.left,node));
+			return root;
 		}
 		
-		// a의 최대(이진검색트리 좌측) < b의 최소(우측)
-		public B_Tree Merge(B_Tree a, B_Tree b) {
-			
+		// max(a) < min(b)
+		public Node Merge(Node a, Node b) {
 			if(a == null) return b;
-			if(b == null) return a;
-		
-			if(a.priority < b.priority) {
-				// b가 루트 되어야 함.
-				B_Tree ret = Merge(a,b.left);
-				b.SetLeft(ret);
+			else if(b == null) return a;
+			
+			if(a.priority > b.priority ) {
+				a.SetRight(Merge(a.right,b));
+				return a;
+			} 
+			else {
+				b.SetLeft(Merge(a,b.left));
 				return b;
 			}
-			else {
-				// a가 루트 되어야 함.
-				B_Tree ret = Merge(a.right,b);
-				a.SetRight(ret);
-				return a;
-			}
-		}
-		
-		public B_Tree Remove(B_Tree root,int key) {
-			if(root == null) return root;
+		}	
+		public Node Erase(Node root,int key) {
+
+			if(root == null) return null;
 			if(root.key == key) {
-				B_Tree ret = Merge(root.left,root.right);
+				Node ret = Merge(root.left,root.right);
 				return ret;
 			}
-			else if(root.key < key) {
-				root.SetRight(Remove(root.right,key));
-				return root;
-			}
-			else {
-				root.SetLeft(Remove(root.left,key));
-				return root;
-			}
+			if(root.key < key) root.SetRight(Erase(root.right,key));
+			else root.SetLeft(Erase(root.left,key));
+			return root;
 		}
-		
-		public B_Tree kth(B_Tree root,int k) {
-			int leftSize = 0;
-			if(root.left != null) leftSize = root.left.size;
-			if(k <= leftSize) return kth(root.left, k);
-			if(leftSize+1 == k) return root;
-			return kth(root.right,k-leftSize-1);
+
+		public Node Kth(Node root,int k) {
+			int leftSize = 1;
+			if(root.left != null) leftSize += root.left.size;
+			if(leftSize == k) return root;
+			if(leftSize < k) return Kth(root.right,k-leftSize);
+			else return Kth(root.left,k);
 		}
-		
-		public int CountLessThan(B_Tree root, int num) {
-			if(root == null) return 0;
-			if(root.key >= num) return CountLessThan(root.left, num);
-			else {
-				int counter = 0;
-				if(root.left != null) counter = root.left.size;
-				return counter+1+CountLessThan(root.right, num);
-			}
+	}	
+	static class Pair {
+		public Node a,b;
+
+		public Pair(Node a, Node b) {
+			super();
+			this.a = a;
+			this.b = b;
 		}
 	}
 	
-
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
@@ -182,7 +155,7 @@ public class Main {
 		return (a > b) ? a : b;
 	}
 	static void Display(int[] arr, int limit) {
-		System.out.println("요소갯수 : " + arr.length);
+		//System.out.println("요소갯수 : " + arr.length);
 		for (int i = 0; i < limit; i++)
 			System.out.print(arr[i] + " ");
 		System.out.println();
@@ -190,6 +163,7 @@ public class Main {
 	static void Display(int[][] arr, int limit) {
 		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
 		for (int i = 0; i < limit; i++) {
+			System.out.print("["+i+"] : ");
 			for (int j = 0; j < arr[0].length; j++) {
 				System.out.print(arr[i][j] + " ");
 			}
