@@ -94,7 +94,6 @@ public class Main {
 			return root;
 		}
 		
-		// max(a) < min(b)
 		public Node Merge(Node a, Node b) {
 			if(a == null) return b;
 			else if(b == null) return a;
