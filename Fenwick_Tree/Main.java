@@ -4,68 +4,67 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int NINF = Integer.MIN_VALUE; 
-	static final int INF = Integer.MAX_VALUE; 
+	static final int NINF = Integer.MIN_VALUE / 4;
+	static final int INF = Integer.MAX_VALUE / 4;
 	static int TOTAL;
-	static Fenwick_Tree ftree;
-	
+
 	public static void main(String[] args) throws IOException {
 		ArrayList<Integer> list = new ArrayList<Integer>();
-		list.add(6);
-		list.add(3);
-		list.add(7);
-		list.add(8);
-		list.add(1);
-		list.add(22);
-		list.add(9);
-		list.add(33);
+		for (int i = 1; i <= 9; i++) list.add(i);
 		
-		ftree = new Fenwick_Tree(list);
-		System.out.println(ftree.Sum(7)-ftree.Sum(3));
+		Fenwick tree = new Fenwick(list);
+		for (int i = 0; i < 9; i++) System.out.println(tree.Sum(i));
 	}
 	
-	static class Fenwick_Tree {
-		int[] data;
-		int size;
+	static class Fenwick {
+		public int[] arraySum;
+		public int size;
 		
-		public Fenwick_Tree(ArrayList<Integer> array) {
-			size = array.size()+1;
-			data = new int[size];
+		public Fenwick(ArrayList<Integer> list) {
+			size = list.size()+1;
+			this.arraySum = new int[size];
+			Init(list);
+		}
+		
+		public int LSB_Zero(int value) {
+			return value &= (value-1);
+		}	
+		public int LSB_Add(int value) {
+			return value += (value & -value);
+		}
+		
+		public void Init(ArrayList<Integer> list) {
 			for (int i = 0; i < size-1; i++) {
-				Update(i,array.get(i));
+				Add(i,list.get(i));
 			}
 		}
 		
-		public int Sum(int k) {
+		public int Sum(int idx) {
+			idx++;
 			int ret = 0;
-			k++;
-			while(0 < k) {
-				ret += data[k];
-				k &= (k-1); // 111 & X = 110 
+			while(idx > 0) {
+				ret += arraySum[idx];
+				idx = LSB_Zero(idx);
 			}
 			return ret;
 		}
-		
-		public void Update(int k, int added_Value) {
-			k++;
-			while(k < size) {
-				data[k] += added_Value;
-				k += (k&-k); // 0001 0010 0100 1000
+		public void Add(int idx, int value) {
+			idx++;
+			while(idx < size) {
+				arraySum[idx] += value;
+				idx = LSB_Add(idx);
 			}
 		}
 		
-		
 	}
-		
 	
-
-
-
+	
+	
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
@@ -83,7 +82,7 @@ public class Main {
 		return (a > b) ? a : b;
 	}
 	static void Display(int[] arr, int limit) {
-		//System.out.println("요소갯수 : " + arr.length);
+		// System.out.println("요소갯수 : " + arr.length);
 		for (int i = 0; i < limit; i++)
 			System.out.print(arr[i] + " ");
 		System.out.println();
@@ -91,7 +90,7 @@ public class Main {
 	static void Display(int[][] arr, int limit) {
 		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
 		for (int i = 0; i < limit; i++) {
-			System.out.print("["+i+"] : ");
+			System.out.print("[" + i + "] : ");
 			for (int j = 0; j < arr[0].length; j++) {
 				System.out.print(arr[i][j] + " ");
 			}
