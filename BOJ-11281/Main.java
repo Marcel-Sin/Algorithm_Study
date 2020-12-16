@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -13,13 +14,13 @@ public class Main {
 	static IO_Manager io = new IO_Manager();
 	static final int NINF = Integer.MIN_VALUE / 4;
 	static final int INF = Integer.MAX_VALUE / 4;
-	static int MAX_VERTEX = 20000,scc_Counter,visit_Counter,N,M;
+	static int MAX_VERTEX = 20000,scc_Counter,visit_Counter,N,M,tmp;
 	
 	static ArrayList<Integer>[] graph = new ArrayList[MAX_VERTEX];
 	static int[] scc = new int[MAX_VERTEX];
 	static int[] visited = new int[MAX_VERTEX];
 	static Stack<Integer> stack = new Stack<Integer>();
-	static boolean[] problem = new boolean[MAX_VERTEX];
+	static int[] answer = new int[MAX_VERTEX];
 	/*
 	 * 3 4
 	 * -1 2
@@ -29,18 +30,54 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException {
 		for (int i = 0; i < graph.length; i++) graph[i] = new ArrayList<Integer>();
-		
+		Solve_2Sat();
 	}
 	static void Solve_2Sat() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		N = nextInt(stk);
 		M = nextInt(stk);
+		Arrays.fill(scc, -1);
+		Arrays.fill(visited, -1);
+		
 		int a,b;
 		for (int i = 0; i < M; i++) {
 			stk = new StringTokenizer(io.inputStr());
 			a = nextInt(stk); b = nextInt(stk);
-			
+			Connect(Indexing(-a),Indexing(b));
+			Connect(Indexing(-b),Indexing(a));
 		}
+		int size = N*2;
+		for (int i = 0; i < size; i++) {
+			if(visited[i] == -1) TarjanSCC(i);
+		}
+		
+		for (int i = 0; i < size; i+=2) {
+			if(scc[i] == scc[i+1]) {
+				
+				System.out.println(0);
+				return;
+			}
+		}
+		System.out.println(1);
+		ArrayList<Pair> list = new ArrayList<Main.Pair>();
+		for (int i = 0; i < size; i++) {
+			list.add(new Pair(scc[i],i));
+		}
+		Collections.sort(list);
+		Arrays.fill(answer, -1);
+		for (int i = 0; i < list.size(); i++) {
+			int vertex = list.get(i).b;
+			int variable = vertex/2;
+			//2로 딱떨어지면 x, 남으면 ~x, 먼저나온 결과가 항상 F 가 되야함
+			int value = (vertex % 2 == 0) ? 0:1; 
+			if(answer[variable] != -1) continue;
+			else answer[variable] = value;
+		}
+		
+		for (int i = 0; i < N; i++) {
+			System.out.print(answer[i]+" ");
+		}
+		
 	}
 	
 	
@@ -67,7 +104,9 @@ public class Main {
 	}
 
 	static int Indexing(int value) {
-		return (value*-1) + ((value < 0) ? 1 : 0);
+		int v = Math.abs(value)*2-2;
+		if(value < 0) return v+1;
+		else return v;
 	}
 	
 	static void Connect(int a, int b) {
@@ -85,7 +124,7 @@ public class Main {
 		@Override
 		public int compareTo(Pair o) {
 			if(this.a == o.a) return 0;
-			else return (this.a < o.a) ? 1:-1;
+			else return (this.a > o.a) ? -1:1;
 		}
 		
 	}
