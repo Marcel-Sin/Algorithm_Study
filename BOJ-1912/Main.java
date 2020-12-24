@@ -17,35 +17,34 @@ public class Main {
 	static final int MAX_SIZE = 100001;
 	
 	static int[] MAP = new int[MAX_SIZE];
-	static int[] DP = new int[MAX_SIZE];
 	static int TOTAL,N,ANS;
 	
 	
 	public static void main(String[] args) throws IOException {
 
 		Init();
-		Solve(N);
+		Solve(N-1);
 		System.out.println(ANS);
 	}
-	/*
-	 * 10
-		10 -4 3 1 5 6 -35 12 21 -1
-	 */
+
 	static void Init() throws IOException{
 		N = io.inputInt();
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		
-		for (int i = 1; i <= N; i++) MAP[i] = nextInt(stk);
-		
-		DP[0] = 0;
-		ANS = Integer.MIN_VALUE;
+		for (int i = 0; i < N; i++) MAP[i] = nextInt(stk);
+
 	}
 	
 	static void Solve(int n) {
-		if(n == 0) return;
-		Solve(n-1);
-		DP[n] = Max(DP[n-1]+MAP[n],MAP[n]);
-		ANS = Max(ANS,DP[n]);
+		if(n == 0) {ANS = MAP[0]; return;}
+		int left = 0, right = n, sum = 0;
+		for (int i = 0; i <= n; i++) sum += MAP[i];
+		ANS = sum;
+		while(left != right) {
+			if(MAP[left] < MAP[right]) sum -= MAP[left++];
+			else sum -= MAP[right--];
+			ANS = Max(ANS,sum);
+		}
 	}
 	
 
