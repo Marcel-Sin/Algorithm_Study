@@ -29,15 +29,13 @@ public class Main {
 		N = io.inputInt();
 		DP[0] = 0;
 		Arrays.fill(DP, -1);
-		for (int i = 1; i*i <= 100000; i++) DP[i*i] = 1;	
 	}
 	//DP[N] : 자연수 N에 대한 제곱수의 최소 갯수
 	static int Solve(int n) {
 		if(DP[n] != -1) return DP[n];
-		int rootValue = (int)Math.sqrt(n);
-		int ret = Integer.MAX_VALUE;
-		for (int i = 1; i <= rootValue; i++) {
-			ret = Min(ret,DP[i*i] + Solve(n-i*i));
+		int ret = n;
+		for(int i = 2; i*i <= n; i++) {
+			ret = Min(ret, Solve(n-i*i)+1);
 		}
 		DP[n] = ret;
 		return DP[n];
