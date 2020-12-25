@@ -3,75 +3,78 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Random;
+import java.util.Stack;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int NUM;
-	static int[] DP = new int[31];
-	public static void main(String[] args) throws IOException {
-		NUM = io.inputInt();
-		Init();
-		System.out.println(DP_Solve(NUM));
-	}
+	static final int NINF = Integer.MIN_VALUE / 4;
+	static final int INF = Integer.MAX_VALUE / 4;
+	static final int MAX_SIZE = 31;
 	
-	static int DP_Solve(int n) {
-		if(n < 0) return 0;
+	static long[] DP = new long[MAX_SIZE];
+	static int TOTAL,N;
+	
+	
+	public static void main(String[] args) throws IOException {
+		Init();
+		if(N % 2 == 1) System.out.println(0);
+		else System.out.println(Solve(N));
+	}
+
+	static void Init() throws IOException{
+		N = io.inputInt();
+		Arrays.fill(DP, -1);
+		DP[0] = 1;
+	}
+
+	static long Solve(int n) {
 		if(DP[n] != -1) return DP[n];
-		int count = 0;
-		count += 3*DP_Solve(n-2);
-		for(int x = 4; n-x >= 0; x+= 2) {
-			count += 2*DP_Solve(n-x);
-		}
-		DP[n] = count;
+		DP[n] = 0;
+		for (int i = 0; i+4 <= n; i+=2) DP[n] += 2*Solve(i);
+		DP[n] += 3*Solve(n-2);
 		return DP[n];
 	}
 	
-	static void Init() throws IOException{
-		Arrays.fill(DP, -1);
-		DP[0] = 0; //Only for the case, 4 <= n
-		for(int i = 1; i < DP.length; i+=2) DP[i] = 0;
-		DP[2] = 3;
-		DP[4] = 11;
-		
-		
-	}
-	
+
+	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
 	static long Min(long a, long b) {
-		return (a > b)?b:a;
+		return (a > b) ? b : a;
 	}
 	static long Max(long a, long b) {
-		return (a > b)?a:b;
+		return (a > b) ? a : b;
 	}
 	static int Min(int a, int b) {
-		return (a > b)?b:a;
+		return (a > b) ? b : a;
 	}
 	static int Max(int a, int b) {
-		return (a > b)?a:b;
+		return (a > b) ? a : b;
 	}
-	static void Display(int[] arr) {
-		System.out.println("요소갯수 : " + arr.length);
-		for(int i = 0; i < arr.length; i++) System.out.print(arr[i]+" ");
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
 		System.out.println();
 	}
-	static void Display(int[][] arr) {
-		System.out.println("요소갯수 : " + (arr.length*arr[0].length));
-		for(int i = 0; i < arr.length; i++) {
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
 			for (int j = 0; j < arr[0].length; j++) {
-				System.out.print(arr[i][j]+" ");
+				System.out.print(arr[i][j] + " ");
 			}
 			System.out.println();
 		}
 		System.out.println();
 	}
-	
 }
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
@@ -99,4 +102,5 @@ class IO_Manager {
 	public void close() throws IOException {
 		br.close();
 		bw.close();
-	}}
+	}
+}
