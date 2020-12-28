@@ -14,15 +14,18 @@ public class Main {
 	static IO_Manager io = new IO_Manager();
 	static final int NINF = Integer.MIN_VALUE / 4;
 	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 1001;
-	static Random rand = new Random();
+	static final int MAX_SIZE = 5000001;
+	
+	static int[] problem,temp;
 	static int N,K;
-	static Treap btree;
+
 	
 	public static void main(String[] args) throws IOException {
-		Init();
-		System.out.println(btree.Kth(btree, K).key);
+
 		
+		Init();
+		MergeSort(problem, 0, N-1);
+		System.out.println(problem[K-1]);
 	}
 
 	static void Init() throws IOException {
@@ -30,102 +33,39 @@ public class Main {
 		N = nextInt(stk);
 		K = nextInt(stk);
 		
+		problem = new int[MAX_SIZE];
+		temp = new int[MAX_SIZE];
+		
 		stk = new StringTokenizer(io.inputStr());
-		btree = new Treap(nextInt(stk));
-		for (int i = 1; i < N; i++) {
-			btree = btree.Insert(btree, new Treap(nextInt(stk)));
-		}
-
-	}
-	
-	static void LMR(Treap node) {
-		if(node == null) return;
-		
-		if(node.left != null) LMR(node.left);
-		System.out.println(node.key);
-		if(node.right != null) LMR(node.right);
+		for (int i = 0; i < N; i++) problem[i] = nextInt(stk);
 		
 	}
 	
-	static class Treap {
-		public int key,priority,size;
-		public Treap left,right;
-		public Treap(int key) {
-			super();
-			this.key = key;
-			this.priority = rand.nextInt();
-			this.size = 1;
-			this.left = null;
-			this.right = null;
+	static void MergeSort(int[] arr,int left,int right) {
+		// Base condition
+		if(left >= right) return;
+		
+		// Divide
+		int mid = (left+right)/2;
+		
+		// Conquer
+		MergeSort(arr,left,mid);
+		MergeSort(arr,mid+1,right);
+		
+		// Merge
+		int i=left, j=mid+1, k = left;
+		while(k <= right) {
+			if(mid < i) temp[k++] = arr[j++];
+			else if(right < j) temp[k++] = arr[i++];
+			else if(arr[i] <= arr[j]) temp[k++] = arr[i++];
+			else temp[k++] = arr[j++];
 		}
 		
-		public int CalcSize() {
-			size = 1;
-			if(left != null) size += left.size;
-			if(right != null) size += right.size;
-			return size;
-		}
-		public void SetLeft(Treap node) {
-			left = node;
-			CalcSize();
-		}
-		public void SetRight(Treap node) {
-			right = node;
-			CalcSize();
-		}
-		
-		
-		public Pair Split(Treap root,int key) {
-			if(root == null) return new Pair(null,null);
-			
-			if(root.key < key) {
-				Pair rs = Split(root.right,key);
-				root.SetRight(rs.a);
-				return new Pair(root,rs.b);
-			}
-			else {
-				Pair ls = Split(root.left,key);
-				root.SetLeft(ls.b);
-				return new Pair(ls.a,root);
-			}
-		}
-		
-		public Treap Insert(Treap root, Treap node) {
-			if(root == null) return node;
-			if(root.priority < node.priority) {
-				Pair sub = Split(root,node.key);
-				node.SetLeft(sub.a);
-				node.SetRight(sub.b);
-				return node;
-			}
-			else {
-				if(root.key < node.key) root.SetRight(Insert(root.right,node));
-				else root.SetLeft(Insert(root.left,node));
-				return root;
-			}
-		}
-		
-		public Treap Kth(Treap root, int k) {
-			if(root == null) return null;
-			int leftSize = 1;
-			if(root.left != null) leftSize += root.left.size;
-			if(leftSize == k) return root;
-			else if(leftSize < k) return Kth(root.right,k-leftSize);
-			else return Kth(root.left,k);
-		}
-		
-	}
-	static class Pair {
-		public Treap a,b;
-
-		public Pair(Treap a, Treap b) {
-			super();
-			this.a = a;
-			this.b = b;
-		}
-		
+		// copy
+		for (i = left; i <= right; i++) arr[i] = temp[i];
 	}
 
+	
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
