@@ -16,15 +16,15 @@ public class Main {
 	static final int INF = Integer.MAX_VALUE / 4;
 	static final int MAX_SIZE = 5000001;
 	
-	static int[] problem,temp;
-	static int N,K;
+	static int[] problem;
+	static int N,K,mem;
 
 	
 	public static void main(String[] args) throws IOException {
 
 		
 		Init();
-		MergeSort(problem, 0, N-1);
+		Qsort(problem,0,N-1,K-1);
 		System.out.println(problem[K-1]);
 	}
 
@@ -34,37 +34,53 @@ public class Main {
 		K = nextInt(stk);
 		
 		problem = new int[MAX_SIZE];
-		temp = new int[MAX_SIZE];
 		
 		stk = new StringTokenizer(io.inputStr());
 		for (int i = 0; i < N; i++) problem[i] = nextInt(stk);
-		
 	}
 	
-	static void MergeSort(int[] arr,int left,int right) {
-		// Base condition
+	static void Qsort(int[] arr, int left, int right, int k) {
 		if(left >= right) return;
-		
-		// Divide
-		int mid = (left+right)/2;
-		
-		// Conquer
-		MergeSort(arr,left,mid);
-		MergeSort(arr,mid+1,right);
-		
-		// Merge
-		int i=left, j=mid+1, k = left;
-		while(k <= right) {
-			if(mid < i) temp[k++] = arr[j++];
-			else if(right < j) temp[k++] = arr[i++];
-			else if(arr[i] <= arr[j]) temp[k++] = arr[i++];
-			else temp[k++] = arr[j++];
+		if(right - left+1 > 3) {
+			int median = Median_Of_Three(arr, left, right);
+			int part = Partition(arr,left+1,right-1,median);
+			Qsort(arr,part+1,right,k);
+			Qsort(arr,left,part-1,k);
 		}
-		
-		// copy
-		for (i = left; i <= right; i++) arr[i] = temp[i];
+		else Median_Of_Three(arr, left, right);
 	}
-
+	
+	static int Partition(int[] arr, int left, int right,int pivot) {
+		int SI = left;
+		int P = arr[pivot];
+		Swap(arr, right, pivot);
+		
+		for (int i = left; i < right; i++) {
+			if(arr[i] < P) Swap(arr,i,SI++);
+		}
+		Swap(arr,SI,right);
+		return SI;
+	}
+	
+	static int Median_Of_Three(int[] arr,int left,int right) {
+		if(right - left == 1) {
+			if(arr[left] > arr[right]) Swap(arr,left,right);
+			return left;
+		}
+		else {
+			int mid = (left + right)/2;
+			if(arr[left] > arr[mid]) Swap(arr,left,mid);
+			if(arr[mid] > arr[right]) Swap(arr,mid,right);
+			if(arr[left] > arr[mid]) Swap(arr,left,mid);
+			return mid;
+		}
+	}
+	
+	static void Swap(int[] arr,int i, int j) {
+		mem = arr[j];
+		arr[j] = arr[i];
+		arr[i] = mem;
+	}
 	
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
