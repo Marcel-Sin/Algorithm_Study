@@ -19,13 +19,12 @@ public class Main {
 	
 	static int N;
 	static ArrayList<Pair> problem = new ArrayList<Main.Pair>();
-	static TreeSet<Pair> candidate = new TreeSet<Main.Pair>();
-
+	
 	
 	public static void main(String[] args) throws IOException {
 		problem.ensureCapacity(MAX_SIZE);
 		Init();
-		System.out.println(LineSweep());
+		System.out.println(DC(0,N-1));
 	}
 
 	static void Init() throws IOException {
@@ -37,45 +36,44 @@ public class Main {
 		Collections.sort(problem, new X_Comparator());
 	}
 	
-	static int LineSweep() {
-		//최소 2개
-		candidate.add(problem.get(0));
-		candidate.add(problem.get(1));
-		int ans = Dist(problem.get(0),problem.get(1));
+	static int DC(int low, int high) {
+		if(low >= high) return INF;
+		else if(high-low == 1) return Dist(problem.get(low),problem.get(high));
 		
-		//이 라인은 X축에 대해서 앞으로 전진한다. (뒤쪽 영역 d이하에 대한 점들이 점차 제거됨)
-		int sweepLine = 0, x = 0,dist = 0;
-		for (int here = 2; here < N; here++) {
-			//이 지점은 스윕라인 전진하는 쪽 점이다. (아직 전진안함)
-			Pair herePoint = problem.get(here);
-			
-			// 스윕 라인 전진을 위하여, X축에 대하여 스윕 기준선과 거리를 본 후 미달 후보를 제거한다. [1차 가지치기]
-			while(sweepLine < here) {
-				Pair backPoint = problem.get(sweepLine);
-				x = herePoint.x - backPoint.x;
-				if(x*x > ans) {
-					candidate.remove(backPoint);
-					sweepLine++;
-				}
-				//아직 스윕 라인이 정답 가능한 X 범위 내에 존재한다.
-				else break;
+		int mid = (low+high)/2;
+		
+		int leftMin = DC(low,mid);
+		int rightMin = DC(mid+1,high);
+		int ans = Min(leftMin,rightMin);
+		
+		int d = (int)Math.sqrt(ans)+1;
+		int minX = problem.get(mid).x - d;
+		int maxX = problem.get(mid).x + d;
+		
+		//이 트리는 y에 대해서 정렬 되어있음.
+		TreeSet<Pair> tree = new TreeSet<Main.Pair>();
+		for (int i = low; i <= high; i++) {
+			Pair pair = problem.get(i);
+			if(minX <= pair.x && pair.x <= maxX) tree.add(pair);
+		}
+		Iterator<Pair> mainIter = tree.iterator();
+		while(mainIter.hasNext()) {
+			Pair selected_Pair = mainIter.next();
+			Pair toBound = new Pair(0,selected_Pair.y+d);
+			SortedSet<Pair> stree = tree.subSet(selected_Pair, toBound);
+			Iterator<Pair> iter = stree.iterator();
+			int check = 0;
+			while(check < 6 && iter.hasNext()) {
+				Pair cmp = iter.next();
+				if(cmp == selected_Pair) continue;
+				int dist = Dist(selected_Pair,cmp);
+				ans = Min(ans,dist);
+				check++;
 			}
-			
-			// 다음은 현재 지점에서 y+d y-d 영역의 후보점들을 검사한다. [+-d 2차 가지치기]
-			dist = (int)Math.sqrt(ans)+1;
-			Pair fromBound = new Pair(dist,herePoint.y-dist);
-			Pair toBound = new Pair(dist,herePoint.y+dist);
-			SortedSet<Pair> tree = candidate.subSet(fromBound, toBound);
-			Iterator<Pair> iter = tree.iterator();
-			while(iter.hasNext()) {
-				Pair iterPoint = iter.next();
-				dist = Dist(iterPoint,herePoint);
-				if(dist < ans) ans = dist;
-			}
-			candidate.add(herePoint);
 		}
 		return ans;
 	}
+	
 	
 	static int Dist(Pair a, Pair b) {
 		int xx = (b.x-a.x), yy = (b.y-a.y);
@@ -92,7 +90,6 @@ public class Main {
 		}
 		
 	}
-	
 	static class Pair implements Comparable<Pair>{
 		public int x,y;
 
