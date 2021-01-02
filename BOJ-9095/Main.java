@@ -3,59 +3,79 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int counter = 0;
-	static int input = 0;
-	static Queue<Integer> Q = new LinkedList<Integer>();
-	public static void main(String[] args) throws IOException {
-		int caseCount = io.inputInt();
-		for(int i = 0 ; i < caseCount; i++) {
-			input = io.inputInt();
-			BFS(0);
-			System.out.println(counter);
-			counter = 0;
-		}
-		
-	}	
+	static final int NINF = Integer.MIN_VALUE / 4;
+	static final int INF = Integer.MAX_VALUE / 4;
+	static final int MAX_SIZE = 12;
 
-	static void DFS(int num) {
-		if(num == input) {
-			counter++;
-			return;
-		}	
-		else if(num > input) return;
-		for(int i = 1; i <= 3; i++) DFS(num+i);
-	}
-	static void BFS(int num) {
-		Q.add(1);
-		Q.add(2);
-		Q.add(3);
-		while(Q.isEmpty() == false) {
-			int root = Q.poll();
-			if(root == input) counter++;
-			else if(root < input) {
-				for(int i = 1; i <= 3; i++) 
-					if(root+i <= input) Q.add(root+i);
-			}
+	static int N,TOTAL;
+	static int[] DP = new int[MAX_SIZE];
+
+	public static void main(String[] args) throws IOException {
+		
+		Arrays.fill(DP, -1);
+		TOTAL = io.inputInt();
+		for (int i = 0; i < TOTAL; i++) {
+			Init();
+			System.out.println(Solve(N));
 		}
 	}
-	
+
+	static void Init() throws IOException {
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		DP[0] = INF;
+		DP[1] = 1;
+		DP[2] = 2;
+		DP[3] = 4;
+	}
+	static int Solve(int n) throws IOException {
+		if(DP[n] != -1) return DP[n];
+		DP[n] = Solve(n-1)+Solve(n-2)+Solve(n-3);
+		return DP[n];
+	}
+
+	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
