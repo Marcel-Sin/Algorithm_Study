@@ -5,50 +5,53 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Stack;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static final int NINF = Integer.MIN_VALUE / 4;
 	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 100;
+	static final int MAX_SIZE = 101;
 	static final int MOD = 1000000000;
-	
-	static long[][] DP = new long[MAX_SIZE][10];
-	static long[] SUM = new long[MAX_SIZE];
-	
-	static int N;
-	
-	public static void main(String[] args) throws IOException {
-		N = io.inputInt();
-		for (int i = 0; i < DP.length; i++) Arrays.fill(DP[i], 0);	
-		Arrays.fill(SUM,-1);
-		
-		//Init Value
-		SUM[0] = 9;
-		for (int i = 1; i < 10; i++) DP[0][i] = 1; 
-		
-		
-		System.out.println(Solve(N-1));
-	}
-	
-	static long Solve(int n) {
-		if(SUM[n] != -1) return SUM[n];
 
-		Solve(n-1);
-		DP[n][0] = DP[n-1][1] % MOD;
-		for (int i = 1; i <= 8; i++) DP[n][i] = (DP[n-1][i-1]+DP[n-1][i+1])% MOD;
-		DP[n][9] = DP[n-1][8] % MOD;
-			
-		SUM[n] = 0;
-		for (int i = 0; i <= 9; i++) SUM[n] += DP[n][i];
-		SUM[n] = SUM[n] % MOD;
-		return SUM[n];
+	static int N;
+	static int[][] DP = new int[MAX_SIZE][10];
+
+	public static void main(String[] args) throws IOException {
+		
+
+		Init();
+		System.out.println(Solve(N));
+		
 	}
-	
+
+	static void Init() throws IOException {
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		for (int i = 0; i < MAX_SIZE; i++) Arrays.fill(DP[i], -1);
+		
+		DP[1][0] = 0;
+		for (int i = 1; i <= 9; i++) DP[1][i] = 1;
+		
+	}
+	static int Solve(int n) throws IOException {
+		for (int i = 2; i <= n; i++) {
+			DP[i][0] = DP[i-1][1] % MOD;
+			DP[i][9] = DP[i-1][8] % MOD;
+			for (int j = 1; j <= 8 ; j++) {
+				DP[i][j] = DP[i-1][j-1]+DP[i-1][j+1];
+				DP[i][j] %= MOD;
+			}
+		}
+		int ret = 0;
+		for (int i = 0; i < 10; i++) {
+			ret += DP[n][i];
+			ret %= MOD;
+		}
+		return ret;
+	}
 
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
