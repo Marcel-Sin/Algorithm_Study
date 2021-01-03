@@ -5,68 +5,60 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Stack;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static final int NINF = Integer.MIN_VALUE / 4;
 	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 100000;
-
-	//[N][0] : 현시점 위 선택시,
-	//[N][1] : 현시점 아래 선택시,
-	//[N][2] : 둘다 선택안할 시
-	static int[][] MAP = new int[MAX_SIZE][2];
-	static int[][] DP = new int[MAX_SIZE][3];
-	static int TOTAL,N;
+	static final int MAX_SIZE = 100001;
+	static final int UP = 0, DOWN = 1;
 	
+
+	static int N,TOTAL;
+	static int[][] MAP = new int[2][MAX_SIZE];
+	static int[][] DP = new int[2][MAX_SIZE];
+
 	
 	public static void main(String[] args) throws IOException {
+		
 		TOTAL = io.inputInt();
 		for (int i = 0; i < TOTAL; i++) {
 			Init();
-			System.out.println(Solve(N-1));
+			System.out.println(Solve(N));
 		}
 	}
-	
-	static void Init() throws IOException{
-		N = io.inputInt();
-		for (int i = 0; i < N; i++) {
-			MAP[i][0] = -1;
-			MAP[i][1] = -1;
-			DP[i][0] = -1;
-			DP[i][1] = -1;
-			DP[i][2] = -1;
-		}
-		
-		
+
+	static void Init() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		for (int i = 0; i < N; i++) MAP[i][0] = nextInt(stk);
+		N = nextInt(stk);
+		DP[UP][0] = 0;
+		DP[DOWN][0] = 0;
+
+		
 		stk = new StringTokenizer(io.inputStr());
-		for (int i = 0; i < N; i++) MAP[i][1] = nextInt(stk);
+		for (int i = 1; i <= N; i++) MAP[UP][i] = nextInt(stk);	
 		
-		DP[0][0] = MAP[0][0];
-		DP[0][1] = MAP[0][1];
-		DP[0][2] = 0;
+		stk = new StringTokenizer(io.inputStr());
+		for (int i = 1; i <= N; i++) MAP[DOWN][i] = nextInt(stk);	
+		
+		DP[UP][1] = MAP[UP][1];
+		DP[DOWN][1] = MAP[DOWN][1];
 	}
-	
-	static int Solve(int n) {
-		if(n == 0) return 0;
-		Solve(n-1);
-		DP[n][0] = MAP[n][0];
-		DP[n][1] = MAP[n][1];
-		DP[n][2] = 0;
-		
-		DP[n][0] += Max(DP[n-1][1] , DP[n-1][2]);
-		DP[n][1] += Max(DP[n-1][0] , DP[n-1][2]);
-		DP[n][2] += Max(DP[n-1][0] , DP[n-1][1]);
-		
-		return Max(DP[n][0],DP[n][1]);
+	static int Solve(int n) throws IOException {
+
+		for (int i = 2; i <= n; i++) {
+			DP[UP][i] = MAP[UP][i];
+			DP[UP][i] += Max(DP[DOWN][i-1],DP[DOWN][i-2]);
+			
+			DP[DOWN][i] = MAP[DOWN][i];
+			DP[DOWN][i] += Max(DP[UP][i-1],DP[UP][i-2]);
+		}
+
+		return Max(DP[UP][n],DP[DOWN][n]);
 	}
-	
 
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
