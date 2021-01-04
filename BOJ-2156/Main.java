@@ -5,62 +5,51 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Stack;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static final int NINF = Integer.MIN_VALUE / 4;
 	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 10001;
-
-	//[N][0] : 현시점 포도주 선택 안할시 최대값,
-	//[N][1] : 현시점을 첫번째 포도주로 선택 시,
-	//[N][2] : 현시점을 두번째 포도주로 선택 시,
-	static int[] MAP = new int[MAX_SIZE];
-	static int[][] DP = new int[MAX_SIZE][3];
-	static int TOTAL,N;
+	static final int MAX_SIZE = 100001;
+	static final int NOT_CHOICE = 0,FIRST = 1, SECOND = 2;
 	
+
+	static int N,TOTAL;
+	static int[] MAP = new int[MAX_SIZE];
+	static int[] maxSum = new int[MAX_SIZE];
+	static int[][] DP = new int[3][MAX_SIZE];
 	
 	public static void main(String[] args) throws IOException {
-
-
 		Init();
-		Solve(N);
-		System.out.println(Max(Max(DP[N][0],DP[N][1]),DP[N][2]));
-	
+		System.out.println(Solve(N));
 	}
-	
-	static void Init() throws IOException{
-		N = io.inputInt();
-		for (int i = 0; i <= N; i++) {
-			MAP[i] = -1;
-			DP[i][0] = -1;
-			DP[i][1] = -1;
-			DP[i][2] = -1;
+
+	static void Init() throws IOException {
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		for (int i = 1; i <= N; i++) MAP[i] = io.inputInt();	
+		
+		DP[NOT_CHOICE][0] = DP[FIRST][0] = DP[SECOND][0] = maxSum[0] = 0;
+		DP[NOT_CHOICE][1] = 0;
+		DP[FIRST][1] = MAP[1];
+		DP[SECOND][1] = MAP[1];
+		maxSum[1] = MAP[1];
+	}
+	static int Solve(int n) throws IOException {
+
+		for (int i = 2; i <= n; i++) {
+			DP[NOT_CHOICE][i] = maxSum[i-1];
+			DP[FIRST][i] = maxSum[i-2]+MAP[i];
+			DP[SECOND][i] = DP[1][i-1]+MAP[i];
+			maxSum[i] = Max(DP[NOT_CHOICE][i],DP[FIRST][i]);
+			maxSum[i] = Max(maxSum[i],DP[SECOND][i]);
 		}
-		MAP[0] = 0;
-		for (int i = 1; i <= N; i++) MAP[i] = io.inputInt();
 		
-		DP[0][0] = DP[0][1] = DP[0][2] = 0;
-		
-		DP[1][0] = 0;
-		DP[1][1] = MAP[1];
-		DP[1][2] = MAP[1];
-		
+		return maxSum[n];
 	}
-	
-	static void Solve(int n) {
-		if(n == 1) return;
-		Solve(n-1);
-		
-		DP[n][0] = Max(Max(DP[n-1][0],DP[n-1][1]),DP[n-1][2]);
-		DP[n][1] = DP[n-1][0]+MAP[n];
-		DP[n][2] = DP[n-1][1]+MAP[n];
-	}
-	
 
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
