@@ -5,48 +5,43 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Stack;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int NINF = Integer.MIN_VALUE / 4;
-	static final int INF = Integer.MAX_VALUE / 4;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
 	static final int MAX_SIZE = 100001;
-	
+
+	static int N;
 	static int[] MAP = new int[MAX_SIZE];
-	static int TOTAL,N,ANS;
-	
+	static int[] DP = new int[MAX_SIZE];
 	
 	public static void main(String[] args) throws IOException {
-
 		Init();
-		Solve(N-1);
-		System.out.println(ANS);
+		System.out.println(Solve(N));
 	}
 
-	static void Init() throws IOException{
-		N = io.inputInt();
+	static void Init() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		
-		for (int i = 0; i < N; i++) MAP[i] = nextInt(stk);
+		N = nextInt(stk);
+		stk = new StringTokenizer(io.inputStr());
+		for (int i = 1; i <= N; i++) MAP[i] = nextInt(stk);
 
+		DP[1] = MAP[1];
 	}
-	
-	static void Solve(int n) {
-		if(n == 0) {ANS = MAP[0]; return;}
-		int left = 0, right = n, sum = 0;
-		for (int i = 0; i <= n; i++) sum += MAP[i];
-		ANS = sum;
-		while(left != right) {
-			if(MAP[left] < MAP[right]) sum -= MAP[left++];
-			else sum -= MAP[right--];
-			ANS = Max(ANS,sum);
+	static int Solve(int n) throws IOException {
+		for (int here = 2; here <= n; here++) {
+			DP[here] = (0 <= DP[here-1]) ? DP[here-1]+MAP[here]:MAP[here];
 		}
+
+		int ret = DP[1];
+		for (int i = 1; i <= n; i++) ret = Max(DP[i],ret);
+		
+		return ret;
 	}
-	
 
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
