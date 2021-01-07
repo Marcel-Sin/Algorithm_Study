@@ -5,42 +5,46 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Stack;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int NINF = Integer.MIN_VALUE / 4;
-	static final int INF = Integer.MAX_VALUE / 4;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
 	static final int MAX_SIZE = 100001;
+
+
 	
+	static int N;
 	static int[] DP = new int[MAX_SIZE];
-	static int TOTAL,N,ANS;
-	
 	
 	public static void main(String[] args) throws IOException {
 		Init();
 		System.out.println(Solve(N));
 	}
 
-	static void Init() throws IOException{
-		N = io.inputInt();
-		DP[0] = 0;
+	static void Init() throws IOException {
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		
 		Arrays.fill(DP, -1);
+		DP[0] = 0;
+		DP[1] = 1;
+		
 	}
-	//DP[N] : 자연수 N에 대한 제곱수의 최소 갯수
-	static int Solve(int n) {
-		if(DP[n] != -1) return DP[n];
-		int ret = n;
-		for(int i = 2; i*i <= n; i++) {
-			ret = Min(ret, Solve(n-i*i)+1);
+	static int Solve(int n) throws IOException {
+		for (int x = 2; x <= n; x++) {
+			DP[x] = x;
+			int sqr = (int)Math.sqrt(x); 
+			for (int i = 2; i <= sqr; i++) {
+				int rest = x-i*i;
+				DP[x] = Min(DP[x],1+DP[rest]);
+			}
 		}
-		DP[n] = ret;
 		return DP[n];
 	}
-	
 
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
