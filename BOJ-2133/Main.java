@@ -5,41 +5,44 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Stack;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int NINF = Integer.MIN_VALUE / 4;
-	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 31;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+	static final int MAX_SIZE = 100001;
+
+
 	
-	static long[] DP = new long[MAX_SIZE];
-	static int TOTAL,N;
-	
+	static int N;
+	static int[] DP = new int[MAX_SIZE];
 	
 	public static void main(String[] args) throws IOException {
 		Init();
-		if(N % 2 == 1) System.out.println(0);
-		else System.out.println(Solve(N));
+		System.out.println(Solve(N));
 	}
 
-	static void Init() throws IOException{
-		N = io.inputInt();
+	static void Init() throws IOException {
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		
 		Arrays.fill(DP, -1);
 		DP[0] = 1;
+		DP[2] = 3;
+		
+		
 	}
-
-	static long Solve(int n) {
-		if(DP[n] != -1) return DP[n];
-		DP[n] = 0;
-		for (int i = 0; i+4 <= n; i+=2) DP[n] += 2*Solve(i);
-		DP[n] += 3*Solve(n-2);
+	static int Solve(int n) throws IOException {
+		if(n%2 == 1) return 0;
+		for (int i = 4; i <= n; i+=2) {
+			DP[i] = 3*DP[i-2];
+			for (int j = 0; j <= i-4; j+=2) DP[i] += 2*DP[j];
+		}
 		return DP[n];
 	}
-	
 
 	// ===================== functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
