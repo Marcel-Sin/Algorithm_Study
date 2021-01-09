@@ -24,7 +24,7 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {
 		Init();
-		System.out.println(Solve(N,K));
+		System.out.println(Solve());
 	}
 
 	static void Init() throws IOException{
@@ -32,18 +32,28 @@ public class Main {
 		N = nextInt(stk);
 		K = nextInt(stk);
 		for (int i = 0; i < DP.length; i++) Arrays.fill(DP[i],-1);
-		for (int i = 0; i < DP.length; i++) DP[i][1] = 1;
-
+		for (int i = 1; i < DP.length; i++) {
+			//1개로 i를 만드는 갯수
+			DP[i][1] = 1;
+			
+			//i개로 1을 만드는 경우의수
+			DP[1][i] = i;
+			
+			//0을 i개로 만드는 갯수
+			DP[0][i] = 1;
+		}
 	}
 
-	static long Solve(int n,int k) {
-		if(DP[n][k] != -1) return DP[n][k];
-		DP[n][k] = 0;
-		for (int i = 0; i <= n; i++) {
-			DP[n][k] += Solve(n-i,k-1);
-			DP[n][k] = DP[n][k] % MOD;
+	static int Solve() {
+		for (int k = 2; k <= K; k++) {
+			int sum = DP[0][k-1] % MOD;
+			for (int n = 1; n <= 200; n++) {
+				sum += DP[n][k-1];
+				sum %= MOD;
+				DP[n][k] = sum;
+			}
 		}
-		return DP[n][k];
+		return DP[N][K];
 	}
 	
 
