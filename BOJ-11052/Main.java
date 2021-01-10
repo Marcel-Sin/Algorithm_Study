@@ -16,8 +16,8 @@ public class Main {
 	static final int INF = Integer.MAX_VALUE / 4;
 	static final int MAX_SIZE = 1001;
 	
-	static int[] CARD = new int[MAX_SIZE];	
-	static int[] DP = new int[MAX_SIZE];
+	static int[] MAP = new int[MAX_SIZE];
+	static int[] DP  = new int[MAX_SIZE];
 	static int TOTAL,N;
 	
 	
@@ -27,20 +27,20 @@ public class Main {
 	}
 
 	static void Init() throws IOException{
-		Arrays.fill(DP,-1);
-		Arrays.fill(CARD,-1);
 		N = io.inputInt();
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		for (int i = 1; stk.hasMoreTokens(); i++) CARD[i] = nextInt(stk);
-		
-		DP[1] = CARD[1];
+		for (int i = 1; i <= N; i++) MAP[i] = nextInt(stk);
 	}
 
 	static int Solve(int n) {
-		if(DP[n] != -1) return DP[n];
-		DP[n] = CARD[n];
-		for (int i = 1; i <= n/2; i++) {
-			DP[n] = Max(Solve(n-i)+Solve(i),DP[n]);
+		DP[1] = MAP[1];
+		int limit = 0;
+		for (int i = 2; i <= n; i++) {
+			limit = i/2;
+			DP[i] = MAP[i];
+			for (int k = 1; k <= limit; k++) {
+				DP[i] = Max(DP[i-k]+DP[k],DP[i]);
+			}
 		}
 		return DP[n];
 	}
