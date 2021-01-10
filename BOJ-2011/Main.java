@@ -17,8 +17,8 @@ public class Main {
 	static final int MAX_SIZE = 5001;
 	static final int MOD = 1000000;
 	
-	static int[] MAP = new int[MAX_SIZE];	
-	static int[] DP = new int[MAX_SIZE];
+	static int[] MAP = new int[MAX_SIZE];
+	static int[] DP  = new int[MAX_SIZE];
 	static int TOTAL,N;
 	
 	
@@ -28,38 +28,25 @@ public class Main {
 	}
 
 	static void Init() throws IOException{
-		Arrays.fill(DP,-1);
-		Arrays.fill(MAP,-1);
-		
 		char[] temp = io.inputStr().toCharArray();
-		for (int i = 0; i < temp.length; i++) MAP[i+1] = temp[i]-'0';
 		N = temp.length;
-		MAP[0] = 3;
-		DP[0] = 1;
-		DP[1] = 1;
-		
+		for (int i = 1; i <= N; i++) MAP[i] = temp[i-1]-'0';
 	}
 
 	static int Solve(int n) {
-		//맨 앞자리가 0인 경우 무조건 false
 		if(MAP[1] == 0) return 0;
-		
-		for(int i = 2; i <= n; i++) {
-			int pre = MAP[i-1];
-			int cur = MAP[i];
-			int value = pre*10+cur;
-			// 현재 읽는 위치가 0
-			if(cur == 0) {
-				if(value != 10 && value != 20) return 0;
-				else DP[i] = DP[i-2] % MOD;
-			}
-			// 현재 읽는 위치가 1 ~ 9
-			else {
-				if(value == 10 || value == 20) DP[i] = DP[i-2] % MOD;
-				else if(value < 10) DP[i] = DP[i-1] % MOD;
-				else if(value <= 26) DP[i] = (DP[i-1]+DP[i-2]) % MOD;
-				else DP[i] = DP[i-1] % MOD;
-			}
+		DP[0] = 1;
+		DP[1] = 1;
+		int value = 0;
+		for (int i = 2; i <= n; i++) {
+			value = MAP[i-1]*10 + MAP[i];
+			DP[i] = 0;
+			if(value == 0) return 0;
+			else if(value == 10 || value == 20) DP[i] = DP[i-2];
+			else if(11 <= value && value <= 26) DP[i] = DP[i-1] + DP[i-2];
+			else if(value % 10 != 0) DP[i] = DP[i-1];
+			else return 0;
+			DP[i] %= MOD;
 		}
 		return DP[n];
 	}
