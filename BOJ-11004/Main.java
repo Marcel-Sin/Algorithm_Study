@@ -6,83 +6,81 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Random;
-import java.util.Stack;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
 	static final int NINF = Integer.MIN_VALUE / 4;
-	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 5000001;
+	static final int INF = Integer.MAX_VALUE;
 	
-	static int[] problem;
-	static int N,K,mem;
-
+	static int N,K,ANS;
+	
+	static int[] list = new int[5000000];
 	
 	public static void main(String[] args) throws IOException {
-
-		
 		Init();
-		Qsort(problem,0,N-1,K-1);
-		System.out.println(problem[K-1]);
+		QuickSearch(list, 0, N-1, K-1);
 	}
 
-	static void Init() throws IOException {
+	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		N = nextInt(stk);
-		K = nextInt(stk);
-		
-		problem = new int[MAX_SIZE];
-		
+		N = nextInt(stk); K = nextInt(stk);
+		ANS = INF;
 		stk = new StringTokenizer(io.inputStr());
-		for (int i = 0; i < N; i++) problem[i] = nextInt(stk);
-	}
-	
-	static void Qsort(int[] arr, int left, int right, int k) {
-		if(left >= right) return;
-		if(right - left+1 > 3) {
-			int median = Median_Of_Three(arr, left, right);
-			int part = Partition(arr,left+1,right-1,median);
-			Qsort(arr,part+1,right,k);
-			Qsort(arr,left,part-1,k);
+		for (int i = 0; i < N; i++) {
+			list[i] = nextInt(stk);
 		}
-		else Median_Of_Three(arr, left, right);
 	}
-	
-	static int Partition(int[] arr, int left, int right,int pivot) {
-		int SI = left;
-		int P = arr[pivot];
-		Swap(arr, right, pivot);
+
+	static int Partition(int[] arr,int left, int right) {
+		int pivot = (left+right)/2;
+		int temp = arr[left];
+		arr[left] = arr[pivot];
+		arr[pivot] = temp;
 		
-		for (int i = left; i < right; i++) {
-			if(arr[i] < P) Swap(arr,i,SI++);
+		
+		int i = left, j = right;
+		while(i < j) {
+			while(arr[j] > arr[left]) j--;
+			while(i < j && arr[i] <= arr[left]) i++;
+			temp = arr[i];
+			arr[i] = arr[j];
+			arr[j] = temp;
 		}
-		Swap(arr,SI,right);
-		return SI;
+		temp = arr[i];
+		arr[i] = arr[left];
+		arr[left] = temp;
+		return i;
 	}
 	
-	static int Median_Of_Three(int[] arr,int left,int right) {
-		if(right - left == 1) {
-			if(arr[left] > arr[right]) Swap(arr,left,right);
-			return left;
+	static void QuickSearch(int[] arr,int left, int right,int k) {
+		if(left > right) return;
+		int part = Partition(arr,left,right);
+		
+		if(part == k) {
+			ANS = arr[k];
+			System.out.println(ANS);
+			return;
 		}
-		else {
-			int mid = (left + right)/2;
-			if(arr[left] > arr[mid]) Swap(arr,left,mid);
-			if(arr[mid] > arr[right]) Swap(arr,mid,right);
-			if(arr[left] > arr[mid]) Swap(arr,left,mid);
-			return mid;
-		}
+		if(k > part) QuickSearch(arr,part+1,right,k);
+		else QuickSearch(arr,left,part-1,k);
 	}
 	
-	static void Swap(int[] arr,int i, int j) {
-		mem = arr[j];
-		arr[j] = arr[i];
-		arr[i] = mem;
-	}
-	
+
+
+
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
 	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
