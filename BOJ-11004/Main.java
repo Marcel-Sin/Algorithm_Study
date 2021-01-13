@@ -15,44 +15,42 @@ public class Main {
 	static final int NINF = Integer.MIN_VALUE / 4;
 	static final int INF = Integer.MAX_VALUE;
 	
-	static int N,K,ANS;
+	static int N,K;
 	
 	static int[] list = new int[5000000];
 	
 	public static void main(String[] args) throws IOException {
 		Init();
 		QuickSearch(list, 0, N-1, K-1);
+		System.out.println(list[K-1]);
 	}
 
 	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		N = nextInt(stk); K = nextInt(stk);
-		ANS = INF;
 		stk = new StringTokenizer(io.inputStr());
 		for (int i = 0; i < N; i++) {
 			list[i] = nextInt(stk);
 		}
 	}
 
-	static int Partition(int[] arr,int left, int right) {
+	static  int Partition(int[] arr, int left, int right) {
 		int pivot = (left+right)/2;
-		int temp = arr[left];
-		arr[left] = arr[pivot];
-		arr[pivot] = temp;
+		Swap(arr,right,pivot);
+		int SI = left, P = arr[right];
 		
-		
-		int i = left, j = right;
-		while(i < j) {
-			while(arr[j] > arr[left]) j--;
-			while(i < j && arr[i] <= arr[left]) i++;
-			temp = arr[i];
-			arr[i] = arr[j];
-			arr[j] = temp;
+		for (int i = left; i < right; i++) {
+			if(arr[i] <= P) Swap(arr,SI++,i);
 		}
-		temp = arr[i];
-		arr[i] = arr[left];
-		arr[left] = temp;
-		return i;
+		Swap(arr,SI,right);
+		return SI;
+	}
+	
+	
+	static void Swap(int[] arr, int i, int j) {
+		int temp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = temp;
 	}
 	
 	static void QuickSearch(int[] arr,int left, int right,int k) {
@@ -60,12 +58,10 @@ public class Main {
 		int part = Partition(arr,left,right);
 		
 		if(part == k) {
-			ANS = arr[k];
-			System.out.println(ANS);
 			return;
 		}
-		if(k > part) QuickSearch(arr,part+1,right,k);
-		else QuickSearch(arr,left,part-1,k);
+		if(k < part) QuickSearch(arr,left,part-1,k);
+		else QuickSearch(arr,part+1,right,k);
 	}
 	
 
