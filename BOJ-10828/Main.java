@@ -3,11 +3,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.EmptyStackException;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -15,93 +12,41 @@ public class Main {
 	static final int NINF = Integer.MIN_VALUE / 4;
 	static final int INF = Integer.MAX_VALUE;
 	
-	static int N;
-	static MyStack stack = new MyStack(10001);
+	static int TOTAL;
+	static char[] problem;
 	
-
 	public static void main(String[] args) throws IOException {
-		Init();
+		TOTAL = io.inputInt();
+		for (int i = 0; i < TOTAL; i++) {
+			Init();
+			boolean check = Solve(problem);
+			if(check) System.out.println("YES");
+			else System.out.println("NO");
+			
+		}
+
 	}
 
 	static void Init() throws IOException{
-		N = io.inputInt(); 
-		StringTokenizer stk;
-		String command = "";
-		int operand = 0;
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < N; i++) {
-			stk = new StringTokenizer(io.inputStr());
-			command = stk.nextToken();
-			if(stk.hasMoreElements()) operand = nextInt(stk);
-			
-			switch(command) {
-				case "push":
-					stack.Push(operand);
-					break;
-				case "pop":
-					sb.append(stack.Pop());
-					sb.append('\n');
-					break;
-				case "size":
-					sb.append(stack.Size());
-					sb.append('\n');
-					break;
-				case "empty":
-					sb.append(stack.Empty());
-					sb.append('\n');
-					break;
-				case "top":
-					sb.append(stack.Top());
-					sb.append('\n');
-					break;
-			}
+		problem = io.inputStr().toCharArray();
+	}
+	
+	static boolean Solve(char[] problem) {
+		if(problem.length % 2 == 1) return false;
+		Stack<Character> stack = new Stack<Character>();
+		try {
+			for (int i = 0; i < problem.length; i++) {
+				char c = problem[i];
+				if(c == '(') stack.add(c);
+				else stack.pop();
+			}	
+		} catch(EmptyStackException e) {
+			return false;
 		}
-		
-		System.out.println(sb.toString());
+		if(stack.size() == 0) return true;
+		else return false;
 	}
 
-	
-	static class MyStack {
-		int[] arr;
-		int max_size;
-		int count;
-		int top;
-		
-		public MyStack(int size) {
-			super();
-			this.arr = new int[size];
-			this.max_size = size;
-			this.count = 0;
-			this.top = -1; 
-		}
-		
-		public void Push(int x) {
-			if(count >= max_size) return;
-			arr[count] = x;
-			top = count;
-			count ++;
-		}
-		public int Size() {
-			return count;
-		}
-		public int Pop() {
-			if(count <= 0) return -1;
-			int ret = arr[top];
-			count--;
-			top--;
-			return ret;
-		}
-		public int Empty() {
-			if(count == 0) return 1;
-			else return 0;
-		}
-		
-		public int Top() {
-			if(count == 0) return -1;
-			else return arr[top];
-		}
-		
-	}
 	
 
 	// ============================================================
