@@ -3,61 +3,90 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE / 4;
+	static final int INF = Integer.MAX_VALUE;
 	
-	public static void main(String[] args) throws IOException{
-		IO_Manager io = new IO_Manager();
-		HashMap<Character, Integer> hm = new HashMap<Character,Integer>();
-		Vector<String> vstr = new Vector<String>();
-		hm.put('a', 0);
-		hm.put('A', 0);
-		hm.put('0', 0);
-		hm.put(' ', 0);
-		
-		String str = "";
-		while(str != null) {
-			str = io.br.readLine();
-			if(str != null) vstr.add(str);
-		}
-		
-		for(String s : vstr) {
-			for (int i = 0; i < s.length(); i++) {
-				char c = s.charAt(i);
-				if ('a' <= c && c <= 'z') hm.put('a', hm.get('a')+1);
-				if ('A' <= c && c <= 'Z') hm.put('A', hm.get('A')+1);
-				if ('0' <= c && c <= '9') hm.put('0', hm.get('0')+1);
-				if (' ' == c) hm.put(' ', hm.get(' ')+1);
-			}
-			io.write(hm.get('a')+" "+hm.get('A')+" "+hm.get('0')+" "+hm.get(' ')+"\n");
-			hm.put('a', 0);
-			hm.put('A', 0);
-			hm.put('0', 0);
-			hm.put(' ', 0);
-		}
-		io.close();
-		
-		
-		
-		
-		
-	}		
-	static public int nextTokenInt(StringTokenizer stk) {
-		return Integer.parseInt(stk.nextToken());
+	static ArrayList<char[]> list = new ArrayList<char[]>();
+	static int large,small,numer,space;
+	
+	public static void main(String[] args) throws IOException {
+		Init();
+		Solve();
 	}
 	
+	static void Init() throws IOException{
+		String str = null;
+		while(( str = io.br.readLine() ) != null) {
+			list.add(str.toCharArray());
+		}
+	}
+	
+	static void Solve() throws IOException{
+		for(int k = 0; k < list.size(); k++) {
+			char[] str = list.get(k);
+			large = small = numer = space = 0;
+			for (int i = 0; i < str.length; i++) {
+				if('A' <= str[i] && str[i] <= 'Z') large++;
+				else if('a' <= str[i] && str[i] <= 'z') small++;
+				else if('0' <= str[i] && str[i] <= '9') numer++;
+				if(str[i] == ' ') space++;
+			}
+			System.out.print(small + " " + large + " " + numer + " " + space + "\n");
+		}
+
+	}
+	
+
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
@@ -65,7 +94,7 @@ public class Main {
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
-	
+
 	public IO_Manager() {
 		br = new BufferedReader(new InputStreamReader(System.in));
 		bw = new BufferedWriter(new OutputStreamWriter(System.out));
