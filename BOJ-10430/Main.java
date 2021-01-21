@@ -3,35 +3,83 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.TreeMap;
 
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE / 4;
+	static final int INF = Integer.MAX_VALUE;
+
+	static int A,B,C;
+
 	
-	public static void main(String[] args) throws IOException{
-		IO_Manager io = new IO_Manager();
-		StringTokenizer stk = new StringTokenizer(io.inputStr()); 
-		int a = nextTokenInt(stk);
-		int b = nextTokenInt(stk);
-		int c = nextTokenInt(stk);
-		io.write((a+b)%c+"\n");
-		io.write((a%c+b%c)%c+"\n");
-		io.write((a*b)%c+"\n");
-		io.write((a%c * b%c)%c+"");
-		io.close();
+	public static void main(String[] args) throws IOException {
+		Init();
+		Solve();
+	}
+	static void Init() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		A = nextInt(stk);
+		B = nextInt(stk);
+		C = nextInt(stk);
 		
 	}
+	
+	static void Solve() {
+		System.out.println((A+B)%C);
+		System.out.println((A%C+B%C)%C);
+		System.out.println( (A*B)%C);
+		System.out.println(((A%C) * (B%C))%C);
 		
-	static public int nextTokenInt(StringTokenizer stk) {
+	}
+
+
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
@@ -39,7 +87,7 @@ public class Main {
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
-	
+
 	public IO_Manager() {
 		br = new BufferedReader(new InputStreamReader(System.in));
 		bw = new BufferedWriter(new OutputStreamWriter(System.out));
