@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
@@ -12,33 +14,41 @@ public class Main {
 	static final int INF = Integer.MAX_VALUE;
 
 	static int N,K;
-	static SegmentTree stree;
+	static Random rand = new Random();
+	static Treap tree;
 	
 	public static void main(String[] args) throws IOException {
 		Init();
 		Solve();
 	}
-	
 	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		N = nextInt(stk);
 		K = nextInt(stk)-1;
-		stree = new SegmentTree(N);
+		tree = new Treap(1);
+		for (int i = 2; i <= N; i++) {
+			tree = tree.Insert(tree, new Treap(i));
+		}
 	}
 	
 	static void Solve() {
-		int kth = 0;
-		int deletePos = 0;
+		
+		int pos = 0;
 		int mod = N;
+		int key = 0;
 		ArrayList<Integer> answer = new ArrayList<Integer>();
 		
+		
 		for (int i = 0; i < N; i++) {
-			kth = (kth + K) % mod;
-			deletePos = stree.Kth_Query(kth);
-			stree.Zero_Update(deletePos);
-			answer.add(deletePos+1);
+			pos = (pos + K) % mod;
+			key = tree.Kth(tree, pos+1).key;
+			answer.add(key);
+			tree = tree.Delete(tree, key);
 			mod--;
 		}
+		
+		
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append('<');
 		for (int i = 0; i < answer.size()-1; i++) {
@@ -51,47 +61,103 @@ public class Main {
 		System.out.println(sb.toString());
 	}
 	
-
-	static class  SegmentTree {
-		public int arr[];
-		int size;
-		
-		public SegmentTree(int size) {
+	static class Treap {
+		int key,priority,size;
+		Treap left,right;
+		public Treap(int key) {
 			super();
-			this.size = size;
-			arr = new int[size*4];
-			Init(1,0,size-1);
+			this.key = key;
+			this.priority = rand.nextInt();
+			this.size = 1;
+		}
+		public int Calc() {
+			size = 1;
+			if(left != null) size += left.size;
+			if(right != null) size += right.size;
+			return size;
+		}
+		public void SetLeft(Treap node) {
+			this.left = node;
+			Calc();
+		}
+		public void SetRight(Treap node) {
+			this.right = node;
+			Calc();
 		}
 		
-		public int Init(int node, int nodeLeft, int nodeRight) {
-			if(nodeLeft == nodeRight) return arr[node] = 1;
-			int mid = (nodeLeft+nodeRight)/2;
-			return arr[node] = Init(node*2,nodeLeft,mid)+Init(node*2+1,mid+1,nodeRight);
+		public Pair Split(Treap root, int key) {
+			if(root == null) return new Pair(null,null);
+			if(root.key < key) {
+				Pair rs = Split(root.right,key);
+				root.SetRight(rs.a);
+				return new Pair(root,rs.b);
+			}
+			else {
+				Pair ls = Split(root.left,key);
+				root.SetLeft(ls.b);
+				return new Pair(ls.a,root);
+			}
 		}
 		
-		public int Kth_Query(int k, int node, int nodeLeft,int nodeRight) {
-			if(nodeLeft == nodeRight) return nodeLeft;
-			int mid = (nodeLeft+nodeRight)/2;
-			if(k <= arr[node*2]) return Kth_Query(k, node*2, nodeLeft, mid);
-			else return Kth_Query(k-arr[node*2], node*2+1, mid+1,nodeRight);
+		public Treap Insert(Treap root, Treap node) {
+			if(root == null) return node;
+			if(root.priority < node.priority) {
+				Pair pair = Split(root, node.key);
+				node.SetLeft(pair.a);
+				node.SetRight(pair.b);
+				return node;
+			}
+			else {
+				if(root.key < node.key) root.SetRight(Insert(root.right,node));
+				else root.SetLeft(Insert(root.left,node));
+				return root;
+			}
 		}
 		
-		public int Zero_Update(int pos,int node, int nodeLeft,int nodeRight) {
-			if(pos < nodeLeft || nodeRight < pos) return arr[node];
-			if(nodeLeft == nodeRight) return arr[node] = 0;
-			int mid = (nodeLeft+nodeRight)/2;
-			return arr[node] = Zero_Update(pos, node*2, nodeLeft,mid)+Zero_Update(pos, node*2+1, mid+1, nodeRight);
+		public Treap Merge(Treap a, Treap b) {
+			if(a == null) return b;
+			else if(b == null) return a;
+			
+			if(a.priority < b.priority) {
+				b.SetLeft(Merge(a,b.left));
+				return b;
+			}
+			else {
+				a.SetRight(Merge(a.right,b));
+				return a;
+			}
 		}
 		
-		public void Zero_Update(int pos) {
-			Zero_Update(pos, 1, 0,size-1);
+		public Treap Delete(Treap root, int key) {
+			if(root == null) return root;
+			if(root.key == key)  {
+				root = Merge(root.left,root.right);
+				return root; 
+			}
+			else if(root.key < key) root.SetRight(Delete(root.right,key));
+			else root.SetLeft(Delete(root.left,key));
+			return root;
 		}
-		public int Kth_Query(int k) {
-			return Kth_Query(k+1, 1, 0, size-1);
+		
+		public Treap Kth(Treap root, int k) {
+			if(root == null) return null;
+			int leftSize = 1;
+			if(root.left != null) leftSize += root.left.size;
+			if(k == leftSize) return root;
+			else if(k < leftSize) return Kth(root.left,k);
+			else return Kth(root.right,k-leftSize);
 		}
 		
 	}
+	static class Pair {
+		public Treap a,b;
 
+		public Pair(Treap a, Treap b) {
+			this.a = a;
+			this.b = b;
+		}
+	}
+	
 
 	// ============================================================
 	// ============================================================
