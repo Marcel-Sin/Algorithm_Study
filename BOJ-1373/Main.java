@@ -3,56 +3,90 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.TreeMap;
 
 public class Main {
-	
-	public static void main(String[] args) throws IOException{
-		IO_Manager io = new IO_Manager();
-		Vector<Integer> vint = new Vector<Integer>();
-		StringBuilder sb = new StringBuilder();
-		String str = io.inputStr();
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+
+	static int N;
+	static char[] problem;
+	public static void main(String[] args) throws IOException {	
 		
-		// for fitting 3%str.len == 0, pads it '0'
-		int pad = 3 - str.length() % 3;
-		for (int i=0; i < pad; i++) sb.append('0');
-		sb.append(str);
-		
-		// 3%n times Loop, such as sub(0,3), sub(3,6) ... 
-		int count = 0;
-		for (int i=0; i <sb.length()/3; i++) {
-			vint.add(binaryToOctal(sb.substring(count, count+3)));
-			count += 3;
-		}
-		
-		// start printing when it meets the first '1'.
-		int startPrintingIndex = -1;
-		for(int i=0; i < vint.size(); i++) {
-			if(vint.elementAt(i) > 0) { startPrintingIndex = i;
-			break;
-			}
-		}
-		if (startPrintingIndex != -1) {
-			for(int i=startPrintingIndex; i < vint.size(); i++) io.write(vint.elementAt(i)+"");
-		}
-		else io.write(0+"");
-		io.close();
+		Init();
+		Solve();
 	}
+	static void Init() throws IOException{
+		problem = io.inputStr().toCharArray();
+	}
+	
+	static void Solve() {
+		// 패딩 처리
+		int padding = 3 - problem.length%3;
+		ArrayList<Character> list = new ArrayList<Character>(1000005);
+		if(padding != 3) for (int i = 0; i < padding; i++) list.add('0');
+		for (int i = 0; i < problem.length; i++) list.add(problem[i]);
 		
-	static public int nextTokenInt(StringTokenizer stk) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 2; i < list.size(); i+=3 ) {
+			int sum = 0;
+			if(list.get(i-2) == '1') sum += 4;
+			if(list.get(i-1) == '1') sum += 2;
+			if(list.get(i) == '1') sum += 1;
+			sb.append(sum);
+		}
+		System.out.println(sb.toString());
+	}
+
+
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
-	static public int binaryToOctal(String bstr) {
-		int temp = 0;
-		if(bstr.charAt(0) == '1') temp += 4;
-		if(bstr.charAt(1) == '1') temp += 2;
-		if(bstr.charAt(2) == '1') temp += 1;
-		return temp;
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
 	}
 }
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
@@ -60,7 +94,7 @@ public class Main {
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
-	
+
 	public IO_Manager() {
 		br = new BufferedReader(new InputStreamReader(System.in));
 		bw = new BufferedWriter(new OutputStreamWriter(System.out));
