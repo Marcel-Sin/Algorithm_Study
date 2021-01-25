@@ -3,50 +3,93 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.TreeMap;
 
 public class Main {
-	
-	public static void main(String[] args) throws IOException{
-		IO_Manager io = new IO_Manager();
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+
+	static int N,M;
+	static boolean[] prime = new boolean[1000001];
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve();
+	}
+	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int min = nextTokenInt(stk), max = nextTokenInt(stk);
-		int target = 0, num = 0;
-		LinkedList<Integer> vint = new LinkedList<Integer>();
-		ListIterator<Integer> iter;
+		N = nextInt(stk);
+		M = nextInt(stk);
 		
-		for (int i=2; i <= max; i++) vint.add(i);
-		
-		for (int i=0; i < (int)Math.sqrt(max); i++) {
-			target=vint.get(i);
-			if(target > (int)Math.sqrt(max)) break;
-			iter = vint.listIterator(i);
-			iter.next();
-			while(iter.hasNext()) {
-				num = iter.next();
-				if (num % target == 0) iter.remove();
+	}
+	
+	static void Solve() throws IOException{
+		Arrays.fill(prime, true);
+		prime[1] = false;
+		for (int i = 2; i < prime.length; i++) {
+			for (int j = i+i; j < prime.length; j+=i) {
+				prime[j] = false;
 			}
 		}
-		iter = vint.listIterator(0);
-		while(iter.hasNext()) {
-			num = iter.next();
-			if(min <= num && num <= max) io.write(num+"\n");
-			else continue;
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = N; i <= M; i++) {
+			if(prime[i] == true) {
+				sb.append(i);
+				sb.append('\n');
+			}
 		}
-		io.close();
+		System.out.println(sb.toString());
 	}
 
-	
 
-	static public int nextTokenInt(StringTokenizer stk) {
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
@@ -54,7 +97,7 @@ public class Main {
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
-	
+
 	public IO_Manager() {
 		br = new BufferedReader(new InputStreamReader(System.in));
 		bw = new BufferedWriter(new OutputStreamWriter(System.out));
