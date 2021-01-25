@@ -3,41 +3,90 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.TreeMap;
 
 public class Main {
-	
-	public static void main(String[] args) throws IOException{
-		IO_Manager io = new IO_Manager();
-		int count = io.inputInt();
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int prime = 0;
-		int num = 0;
-		boolean isPrime = false;
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+
+	static int N;
+	static boolean[] prime = new boolean[1001];
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(Solve());
+	}
+	static void Init() throws IOException{
 		
-		for(int i=0; i < count; i++) {
-			num = nextTokenInt(stk);
-			isPrime = true;
-			for(int x=2; x < num; x++) {
-				if (num % x == 0) {
-					isPrime = false;
-					break;
-				}
+		N = io.inputInt();
+		
+	}
+	
+	static int Solve() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		Arrays.fill(prime, true);
+		prime[1] = false;
+		for (int i = 2; i < prime.length; i++) {
+			for (int j = i+i; j < prime.length; j+=i) {
+				prime[j] = false;
 			}
-			if (isPrime == true && num != 1) prime++;
 		}
-		System.out.println(prime);
+		
+		int ret = 0;
+		for (int i = 0; i < N; i++) {
+			if(prime[nextInt(stk)] == true) ret++; 
+		}
+		return ret;
 	}
 
-	
 
-	static public int nextTokenInt(StringTokenizer stk) {
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
@@ -45,7 +94,7 @@ public class Main {
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
-	
+
 	public IO_Manager() {
 		br = new BufferedReader(new InputStreamReader(System.in));
 		bw = new BufferedWriter(new OutputStreamWriter(System.out));
