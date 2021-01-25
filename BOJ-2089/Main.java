@@ -3,46 +3,95 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.TreeMap;
 
 public class Main {
-	
-	public static void main(String[] args) throws IOException{
-		IO_Manager io = new IO_Manager();
-		int RADIX = -2;
-		int number = io.inputInt();
-		Vector<Integer> vint = new Vector<Integer>();
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+
+	static int N;
+	public static void main(String[] args) throws IOException {	
 		
-		int value = number,rest=0;
-		while(value != 0) {
-			if (value < 0) {
-				if(value%2 != 0)value += -2;
-				rest = value % RADIX;
-				value = value / RADIX;
-			}
-			else {
-				rest = value % RADIX;
-				value = value / RADIX;
-			}
-			rest = Math.abs(rest);
-			vint.add(rest);
+		Init();
+		Solve();
+	}
+	static void Init() throws IOException{
+		
+		N = io.inputInt();
+		
+	}
+	
+	static void Solve() {
+		int v = N;
+		int r = 0;
+		ArrayList<Integer> ans = new ArrayList<Integer>();
+		while( N != 1 && N != 0 ) {
+			v = N / -2;
+			r = (v * -2 == N) ? 0:1;
+			if(r == 1 && N < 0) v++;
+			N = v;
+			ans.add(r);
 		}
-		if(number == 0) vint.add(0);
-		for(int i=vint.size()-1; i >= 0; i--) io.write(vint.elementAt(i)+"");
-		io.close();
+		if(N == 1) ans.add(1);
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = ans.size()-1; i >= 0; i--) {
+			sb.append(ans.get(i));
+		}
+		if(ans.size() == 0) sb.append(N);
+		System.out.println(sb.toString());
+		
 	}
 
-	
-	
-	static public int nextTokenInt(StringTokenizer stk) {
+
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-		
-	
-	
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
@@ -50,7 +99,7 @@ public class Main {
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
-	
+
 	public IO_Manager() {
 		br = new BufferedReader(new InputStreamReader(System.in));
 		bw = new BufferedWriter(new OutputStreamWriter(System.out));
