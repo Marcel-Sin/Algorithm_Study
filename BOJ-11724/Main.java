@@ -3,8 +3,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
@@ -12,88 +13,101 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 public class Main {
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		HashMap<Integer, Node> graph = new HashMap<Integer, Node>();
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 1000;
+	
+	static int N,M;
+	static boolean[][] matrix = new boolean[MAX][MAX];
+	
+	static boolean[] visit = new boolean[MAX];
+	static StringBuilder sb;
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(Solve());
+	}
+	
+	static void Init() throws IOException{
+		
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int N = Integer.parseInt(stk.nextToken());
-		int M = Integer.parseInt(stk.nextToken());
-		
-		for(int i=1; i <= N; i++) graph.put(i,new Node(graph,i));
-		
-		for(int i=0; i < M; i++) {
+		N = nextInt(stk);
+		M = nextInt(stk);
+		for (int i = 0; i < M; i++) {
 			stk = new StringTokenizer(io.inputStr());
-			Join_Eachother(graph,Integer.parseInt(stk.nextToken()),Integer.parseInt(stk.nextToken()));
+			Connect(nextInt(stk)-1, nextInt(stk)-1);
 		}
-		
-		int nextVisit = 1, connect = 0;
-		while(nextVisit != -1) {
-			if (BFS(graph,nextVisit)) connect++;
-			nextVisit = Unvisit(graph,1,N);
-		}
-		System.out.println(connect);
+
 	}
 	
-	
-	
-	
-	static public void Join_Eachother(HashMap<Integer,Node> graph, int a, int b) {
-		graph.get(a).links.add(b);
-		graph.get(b).links.add(a);
-	}
-	static public void ClearVisit(HashMap<Integer,Node> graph) {
-		for(int key : graph.keySet()) graph.get(key).checked = false;
-	}
-	static public int Unvisit(HashMap<Integer,Node> graph,int start, int end) {
-		int result = -1;
-		for(int i = start; i <= end; i++) {
-			if(graph.get(i).checked == false) {
-				return i;
+	static int Solve() throws IOException {
+		int ret = 0;
+		for (int i = 0; i < N; i++) {
+			if(visit[i] == false) {
+				DFS(i);
+				ret++;
 			}
 		}
-		return result;
-		
+		return ret;
+	}
+
+	static void DFS(int here) {
+		visit[here] = true;
+		for (int there = 0; there < N; there++) { 
+			if(matrix[here][there] && !visit[there]) DFS(there);
+		}
+	}
+
+	static void Connect(int a, int b) {
+		matrix[a][b] = true;
+		matrix[b][a] = true;
 	}
 	
-	static public boolean BFS(HashMap<Integer,Node> graph, int start) {
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		nodeQueue.add(graph.get(start));
-		graph.get(start).checked = true;
-		int vertex = 0;
-		while(nodeQueue.size() != 0) {
-			vertex++;
-			Node parent = nodeQueue.poll();
-			for (int key : parent.links) {
-				Node nextNode = graph.get(key);
-				if (nextNode.checked == false) {
-					nextNode.checked = true;
-					nodeQueue.add(nextNode);
-				}
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
 			}
+			System.out.println();
 		}
-		return true;
-		
+		System.out.println();
 	}
 }
-
-class Node {
-	public int name;
-	public boolean checked;
-	public HashMap<Integer, Node> graph;
-	public SortedSet<Integer> links;
-
-	public Node(HashMap<Integer, Node> graph, int name) {
-		this.checked = false;
-		this.graph = graph;
-		this.name = name;
-		this.links = new TreeSet<Integer>();
-	}
-	public void Action() {
-		System.out.print(name +" ");
-	}
-}
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
