@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
@@ -13,75 +13,99 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 public class Main {
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		HashMap<Integer, HashSet<Integer>> graph = new HashMap<Integer, HashSet<Integer>>();
-		StringTokenizer stk;
-		boolean[] check = new boolean[1001];
-		
-		int totalCase = io.inputInt();
-		for(int k = 0; k < totalCase; k++) {
-			
-			int numberCount = io.inputInt();
-			int result = 0;
-			stk = new StringTokenizer(io.inputStr());
-			for (int i = 1; i <= numberCount; i++) {
-				int linkNode = Integer.parseInt(stk.nextToken());
-				if(i == linkNode) {
-					result++;
-					check[i] = true;
-					continue;
-				}
-				graph.put(i, new HashSet<Integer>() );
-				graph.get(i).add(linkNode);
-			}
-			int nextVisit = NextUnvisit(check,numberCount);
-			while(nextVisit != -1) {
-				if(BFS(graph,check,nextVisit)) result++;
-				nextVisit = NextUnvisit(check,numberCount);
-			}
-			System.out.println(result);
-			graph.clear();
-			ClearCheck(check);
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 1001;
+	
+	static int TEST,N;
+	
+	static ArrayList<Integer>[] graph = new ArrayList[MAX];
+	static int[] visit = new int[MAX];
+	
+	public static void main(String[] args) throws IOException {	
+		TEST = io.inputInt();
+		for (int i = 0; i < graph.length; i++) graph[i] = new ArrayList<Integer>();
+		for (int i = 0; i < TEST; i++) {
+			Init();
+			System.out.println(Solve());
+		}
+	}
+	
+	static void Init() throws IOException{
+		for (int i = 0; i < graph.length; i++) graph[i].clear();
+		N = io.inputInt();
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		for (int i = 1; i <= N; i++) {
+			int b = nextInt(stk);
+			Connect(i, b);
 		}
 		
 	}
 	
-	
-	
-	static public void ClearCheck(boolean[] barr) {
-		for (int i = 1; i < barr.length; i++) barr[i] = false;
-	}
-	
-	static public int NextUnvisit(boolean[] check,int max) {
-		for(int i = 1; i <= max; i++) {
-			if(check[i] == false) return i;
+	static int Solve() throws IOException {
+		int ret = 0;
+		Arrays.fill(visit, 0);
+
+		for (int i = 1; i <= N; i++) {
+			if(visit[i] == 0) {DFS(i); ret++;}
 		}
-		return -1;
+		return ret;
+	}
+
+	static void DFS(int here) {
+		visit[here] = 1;
+		if(visit[graph[here].get(0)] == 0) DFS(graph[here].get(0));
+	}
+
+	static void Connect(int a, int b) {
+		graph[a].add(b);
 	}
 	
-	static public boolean BFS(HashMap<Integer, HashSet<Integer>> graph, boolean[] check, int start) {
-		int startingNode = start;
-		check[start] = true;
-		Queue<Integer> nodeQueue = new LinkedList<Integer>();
-		nodeQueue.add(start);
-		
-		while(nodeQueue.isEmpty() == false) {
-			int parent = nodeQueue.poll();
-			for(int nextNode : graph.get(parent)) {
-				if (nextNode == startingNode) return true;	
-				else if (check[nextNode] == false) {
-					check[nextNode] = true;
-					nodeQueue.add(nextNode);
-				}
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
 			}
+			System.out.println();
 		}
-		return false;
+		System.out.println();
 	}
-	
 }
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
