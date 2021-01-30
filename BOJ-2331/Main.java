@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
@@ -13,62 +13,103 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 public class Main {
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		HashMap<Integer, Integer> graph = new HashMap<Integer, Integer>();
-		int[][] powArr = new int[10][];
-		// TargetN : 0~9,  P : 1~5.
-		for(int i=0; i <= 9; i++) {
-			powArr[i] = new int[6];
-			for(int j=1; j <= 5; j++) {
-				powArr[i][j] = Pow(i,j);
-			}
-		}
-		
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 1000000;
+	
+	static int A,P;
+	
+	static boolean[] visit = new boolean[MAX];
+	static int[] pow = new int[10];
+	
+	// 1. 9^5 = 59049
+	// 2. 사실상 최대치는 잘해봐야 "999999" = 354294 예상,
+	// 3. 더불어 문제 자체가 사이클이 반드시 존재해야 풀림을 본다면,
+	// => [1,000,000] 정도 check[N] 크기는 충분하다는 것을 추측할 수 있다.
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(Solve());
+	}
+	
+	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int A = Integer.parseInt(stk.nextToken());
-		int P = Integer.parseInt(stk.nextToken());
-		graph.put(A,null);
-		int counter = 0;
-		int dupliStarting = Travel(graph,powArr,P,A);
-		int nextVisit = A;
-		while(nextVisit != dupliStarting) {
-			counter++;
-			nextVisit = graph.get(nextVisit);
+		A = nextInt(stk);
+		P = nextInt(stk);
+		for (int i = 0; i < pow.length; i++) {
+			pow[i] = (int)Math.pow(i, P);
 		}
-		System.out.println(counter);
+		Arrays.fill(visit, false);
 	}
 	
-	
-	
-	static public void ClearCheck(boolean[] barr) {
-		for (int i = 1; i < barr.length; i++) barr[i] = false;
+	static int Solve() throws IOException {
+		int v = A;
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		while(!visit[v]) {
+			visit[v] = true;
+			list.add(v);
+			v = Calc(v);
+		}
+		int ret = -1;
+		while(list.get(++ret) != v);
+		return ret;
 	}
-	static public int Travel(HashMap<Integer, Integer> graph,int[][] parr, int p, int pos) {
-		int resultNext = 0;
-		while(true) { 
-			resultNext = 0;
-			StringBuilder sb = new StringBuilder(pos+"");
-			for(int i=0; i<sb.length(); i++) { 
-				int x = sb.charAt(i)-0x30;
-				resultNext += parr[x][p];
+
+	static int Calc(int n) {
+		int ret = 0;
+		while(n != 0) {
+			ret += pow[n%10];
+			n /= 10;
+		}
+		return ret;
+	}
+
+	
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
 			}
-			if (graph.containsKey(resultNext)) break;
-			graph.put(pos,resultNext);
-			pos = resultNext;
+			System.out.println();
 		}
-		return resultNext;
-	}
-	
-	static public int Pow(int x, int n) {
-		if(x == 0) return 0;
-		int result = 1;
-		for(int i = 0; i < n; i++) result *= x;
-		return result;
+		System.out.println();
 	}
 }
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
