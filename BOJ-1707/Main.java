@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
@@ -13,98 +13,117 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 public class Main {
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		HashMap<Integer, HashSet<Integer>> graph = new HashMap<Integer, HashSet<Integer>>();
-		boolean[] check = new boolean[20001];
-		char[] temper = new char[20001];
-		ClearTemper(temper);
-		ClearCheck(check);
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 20000;
+	static final int RED = 0, BLUE = 1;
+	
+	static int K,V,E;
+	
+	static ArrayList<Integer>[] graph = new ArrayList[MAX];
+	static int[] visit = new int[MAX];
+	static boolean interrupt;
+	
+	public static void main(String[] args) throws IOException {	
+		K = io.inputInt();
+		for (int i = 0; i < graph.length; i++) graph[i] = new ArrayList<Integer>();
+		for (int i = 0; i < K; i++) {
+			Init();
+			if(Solve()) System.out.println("YES");
+			else System.out.println("NO");
+		}
+	}
+	
+	static void Init() throws IOException{
+		for (int i = 0; i < graph.length; i++) graph[i].clear();
 		
-		int caseCount = io.inputInt();
-		for (int k = 0; k < caseCount; k++) {
-			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			int N = Integer.parseInt(stk.nextToken());
-			int M = Integer.parseInt(stk.nextToken());
-			
-			for (int i = 1; i <= N; i++) graph.put(i, new HashSet<Integer>());
-			for (int i = 0; i < M; i++) {
-				stk = new StringTokenizer(io.inputStr());
-				Join_Eachother(graph, Integer.parseInt(stk.nextToken()), Integer.parseInt(stk.nextToken()));
-			}
-			
-			
-			boolean isOkay = true;
-			int nextVisit = 1;
-			while (nextVisit != -1) {
-				if(BFS(graph,check,temper,nextVisit) == false) {
-					isOkay = false;
-					break;
-				}
-				ClearTemper(temper);
-				nextVisit = NextUnvisit(check,N);
-			}
-			if(isOkay) System.out.println("YES");
-			else if(!isOkay) System.out.println("NO");
-			ClearTemper(temper);
-			ClearCheck(check);
-			graph.clear();
-			
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		V = nextInt(stk)-1;
+		E = nextInt(stk);
+		for (int i = 0; i < E; i++) {
+			stk = new StringTokenizer(io.inputStr());
+			Connect(nextInt(stk)-1, nextInt(stk)-1);
 		}
 		
 	}
 	
-	
-	
-	
-	static public void Join_Eachother(HashMap<Integer, HashSet<Integer>> graph, int a, int b) {
-		graph.get(a).add(b);
-		graph.get(b).add(a);
-	}
-	static public void ClearTemper(char[] carr) {
-		for (int i = 1; i < 20001; i++) carr[i] = 'X';
-	}
-	static public void ClearCheck(boolean[] barr) {
-		for (int i = 1; i < 20001; i++) barr[i] = false;
-	}
-	
-	static public int NextUnvisit(boolean[] check,int max) {
-		for(int i = 1; i <= max; i++) {
-			if(check[i] == false) return i;
-		}
-		return -1;
-	}
-	
-	static public boolean BFS(HashMap<Integer, HashSet<Integer>> graph, boolean[] check,char[] temper, int start) {
-		Queue<Integer> nodeQueue = new LinkedList<Integer>();
-		check[start] = true;
-		temper[start] = 'R';
-		nodeQueue.add(start);
-		while(nodeQueue.isEmpty() == false) {
-			int parent = nodeQueue.poll();
-			char nextTemper = InverseTemper(temper[parent]);
-			for(int next : graph.get(parent)) {
-				if(temper[next] == 'X') temper[next] = nextTemper;
-			}
-			
-			for(int next : graph.get(parent)) {
-				if(temper[next] != nextTemper) return false;
-				if(check[next] == false && temper[next] == nextTemper) {
-					check[next] = true;
-					nodeQueue.add(next);
-				}
+	static boolean Solve() throws IOException {
+		interrupt = false;
+		Arrays.fill(visit, -1);
+
+		for (int i = 0; i <= V; i++) {
+			if(visit[i] == -1) {
+				visit[i] = RED;
+				DFS(i);
 			}
 		}
+		if(interrupt) return false;
 		
 		return true;
 	}
+
+	static void DFS(int here) {
+		if(interrupt) return;
+		for (int i = 0; i < graph[here].size(); i++) {
+			int there = graph[here].get(i);
+			if(visit[there] == -1) {
+				visit[there] = (visit[here] == RED) ? BLUE:RED;
+				DFS(there);
+			}
+			else if(visit[there] == visit[here]) {interrupt = true; return; }
+		}
+	}
+
+	static void Connect(int a, int b) {
+		graph[a].add(b);
+		graph[b].add(a);
+	}
 	
-	static public char InverseTemper(char c) {
-		return (c == 'R') ? 'B': 'R';
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
 	}
 }
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
