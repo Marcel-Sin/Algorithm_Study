@@ -3,92 +3,124 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Iterator;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.TreeSet;
 
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 50;
+	
+	static int ROW,COL,ISLAND;
+	
+	static int[][] matrix = new int[MAX][MAX];
+	static int[][] visit = new int[MAX][MAX];
+	static int[] dirRow = {-1,-1,-1,0,0,0,1,1,1};
+	static int[] dirCol = {-1,0,1,-1,0,1,-1,0,1};
+	
 
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		Vector<Integer> v = new Vector<Integer>();
-		StringTokenizer stk;
-		int col=-1,row=-1;
-
+	public static void main(String[] args) throws IOException {	
+		boolean check;
 		while(true) {
+			check = Init();
+			if(check == false) break;
+			else Solve();
+		}
+	}
+	
+	static boolean Init() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		COL = nextInt(stk);
+		ROW = nextInt(stk);
+		if(COL == 0) return false;
+		for (int i = 0; i < ROW; i++) Arrays.fill(visit[i], -1);
+		
+		for (int i = 0; i < ROW ; i++) {
 			stk = new StringTokenizer(io.inputStr());
-			col = nextInt(stk);
-			row = nextInt(stk);
-			if(row == 0) break;
-			int[][] map = new int[row][col];
-			boolean[][] check = new boolean[row][col];
-			for(int i=0; i<row; i++) {
-				stk = new StringTokenizer(io.inputStr());
-				for(int j=0; j<col; j++) map[i][j] = nextInt(stk);
+			int k = 0;
+			while(stk.hasMoreTokens()) {
+				matrix[i][k] = nextInt(stk);
+				if(matrix[i][k] == 1) visit[i][k] = 0;
+				k++;
 			}
-			
-			for(int i=0; i<row; i++) {
-				for(int j=0; j<col; j++) {
-					if(map[i][j] == 1 && check[i][j] == false) {
-						Node visit = new Node(i,j);
-						v.add(BFS(map,check,visit));
-					}
+		}
+		ISLAND = 0;
+		return true;
+	}
+	
+	static void Solve() throws IOException {
+		for (int i = 0; i < ROW ; i++) {
+			for (int j = 0; j < COL; j++) {
+				if(visit[i][j] == 0) {
+					ISLAND++;
+					DFS(i,j);
 				}
 			}
-			System.out.println(v.size());
-			v.clear();
 		}
-		
-		
-		
+		System.out.println(ISLAND);
 	}
+	// 이전문제꺼 그냥 재활용...
+	static int DFS(int r, int c) {
+		visit[r][c] = 1;
+		int ret = 0;
+		for (int i = 0; i < 9; i++) {
+			int nr = r + dirRow[i];
+			int nc = c + dirCol[i];
+			if(0 <= nr && nr < ROW && 0 <= nc && nc < COL && visit[nr][nc] == 0) {
+				ret += DFS(nr,nc);
+			}
+		}
+		return ret+1;
+	}
+	
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	
-	static int BFS(int[][] map, boolean[][] check, Node start) {
-		int counter = 0;
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		check[start.row][start.col] = true;
-		nodeQueue.add(start);
-		
-		while(nodeQueue.isEmpty() == false) {
-			Node curPos = nodeQueue.poll();
-			counter++;
-			SurroundingTravel(nodeQueue, curPos, map, check);
-		}
-		return counter;
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
-	static void SurroundingTravel(Queue<Node> que, Node cur,int[][] map,boolean[][] check) {
-		int rowMin = (cur.row-1 < 0) ? 0:(cur.row-1);
-		int rowMax = (cur.row+1 >= map.length) ? map.length-1:cur.row+1;
-		int colMin = (cur.col-1 < 0) ? 0:(cur.col-1);
-		int colMax = (cur.col+1 >= map[0].length) ? map[0].length-1:cur.col+1;
-		
-		for(int i = rowMin; i <= rowMax; i++) {
-			for(int j = colMin; j <= colMax; j++) {
-				if(map[i][j] == 1 && check[i][j] == false) {
-					Node newNode = new Node(i,j);
-					check[i][j] = true;
-					que.add(newNode);
-				}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
 			}
+			System.out.println();
 		}
+		System.out.println();
 	}
-}
-
-class Node {
-	public int row;
-	public int col;
-	public Node(int row, int col) {
-		super();
-		this.row = row;
-		this.col = col;
-	}
-	
 }
 
 // ************************************** //
