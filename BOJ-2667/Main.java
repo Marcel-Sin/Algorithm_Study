@@ -3,82 +3,119 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Vector;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 25;
+	
+	static int N,HOUSE;
+	
+	static int[][] matrix = new int[MAX][MAX];
+	static int[][] visit = new int[MAX][MAX];
+	static int[] dirRow = {0,0,-1,1};
+	static int[] dirCol = {1,-1,0,0};
+	
 
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		int N = io.inputInt();
-		Vector<Integer> v = new Vector<Integer>();
-		boolean[][] mapCheck = new boolean[N][];
-		int[][] map = new int[N][];
-		for(int i=0;i < N; i++) { 
-			map[i] = new int[N];
-			mapCheck[i] = new boolean[N]; 
-		}
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve();
+	}
+	
+	static void Init() throws IOException{
+		N = io.inputInt();
+		for (int i = 0; i < N; i++) Arrays.fill(visit[i], -1);
 		
-		char[] data;
-		String str = "";
-		for(int i=0; i < N; i++) {
-			str = io.inputStr().trim();
-			data = str.toCharArray();
-			for(int j=0; j<N; j++) map[i][j] = data[j]-48;
+		for (int i = 0; i < N ; i++) {
+			char[] map = io.inputStr().toCharArray();
+			for (int j = 0; j < N; j++) {
+				matrix[i][j] = map[j]-'0';
+				if(matrix[i][j] == 1) visit[i][j] = 0;
+			}
 		}
-		
-		for(int i=0; i < N; i++) {
-			for(int j=0; j < N; j++) {
-				if(map[i][j] == 1 && mapCheck[i][j] == false) {
-					Node visit = new Node(i,j);
-					v.add(BFS(map,mapCheck,visit));
+	}
+	
+	static void Solve() throws IOException {
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		for (int i = 0; i < N ; i++) {
+			for (int j = 0; j < N; j++) {
+				if(visit[i][j] == 0) {
+					HOUSE++;
+					list.add(DFS(i,j));
 				}
 			}
 		}
-		Collections.sort(v);
-		io.write(v.size()+"\n");
-		for(int n : v) io.write(n+"\n");
-		io.close();
+		Collections.sort(list);
+		System.out.println(HOUSE);
+		Iterator<Integer> iter = list.iterator();
+		while(iter.hasNext()) {
+			System.out.println(iter.next());
+		}
 	}
-	
-	static int BFS(int[][] map, boolean[][] checker, Node start) {
-		int counter = 0;
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		checker[start.row][start.col] = true;
-		nodeQueue.add(start);
-		
-		while(nodeQueue.isEmpty() == false) {
-			Node curPos = nodeQueue.poll();
-			counter++;
-			Node[] dir = new Node[4];
-			if (curPos.col+1 < map.length && map[curPos.row][curPos.col+1] == 1 && checker[curPos.row][curPos.col+1] == false) dir[0] = new Node(curPos.row,curPos.col+1);
-			if (curPos.col-1 >= 0 && map[curPos.row][curPos.col-1] == 1 && checker[curPos.row][curPos.col-1] == false) dir[1] = new Node(curPos.row,curPos.col-1);
-			if (curPos.row+1 < map.length && map[curPos.row+1][curPos.col] == 1 && checker[curPos.row+1][curPos.col] == false) dir[2] = new Node(curPos.row+1,curPos.col);
-			if (curPos.row-1 >= 0 && map[curPos.row-1][curPos.col] == 1 && checker[curPos.row-1][curPos.col] == false) dir[3] = new Node(curPos.row-1,curPos.col);
-			
-			for (int i =0; i < 4; i++) {
-				if(dir[i] != null) {
-					checker[dir[i].row][dir[i].col] = true;
-					nodeQueue.add(dir[i]);
-				}
+
+	static int DFS(int r, int c) {
+		visit[r][c] = 1;
+		int ret = 0;
+		for (int i = 0; i < 4; i++) {
+			int nr = r + dirRow[i];
+			int nc = c + dirCol[i];
+			if(0 <= nr && nr < N && 0 <= nc && nc < N && visit[nr][nc] == 0) {
+				ret += DFS(nr,nc);
 			}
 		}
-		return counter;
-	}
-
-}
-
-class Node {
-	public int row;
-	public int col;
-	public Node(int row, int col) {
-		super();
-		this.row = row;
-		this.col = col;
+		return ret+1;
 	}
 	
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
 
 // ************************************** //
