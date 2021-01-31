@@ -3,84 +3,144 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 1000;
+	
+	static int ROW,COL;
+	
+	static int[][] matrix = new int[MAX][MAX];
+	static int[] dirRow = {-1,1,0,0};
+	static int[] dirCol = {0,0,-1,1};
+	static Queue<Pair> queue = new LinkedList<Pair>();
 
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		Queue<Node> nodeQueue = new LinkedList<Node>();
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve();
+	}
+	
+	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int col=nextInt(stk),row=nextInt(stk);
-		int[][] tomato = new int[row][col];
-		Node justCounter = new Node(0,0);
-		int resultTomato = 0;
-		
-		for(int i=0; i<row;i++) {
+		COL = nextInt(stk);
+		ROW = nextInt(stk);
+
+
+		for (int i = 0; i < ROW ; i++) {
 			stk = new StringTokenizer(io.inputStr());
-			for(int j=0; j<col; j++) { 
-				tomato[i][j] = nextInt(stk);
-				if(tomato[i][j] == 0) resultTomato++;
-				else if(tomato[i][j] == 1) { 
-					resultTomato++;
-					Node start = new Node(i,j);
-					tomato[i][j] = 2;
-					nodeQueue.add(start);
-				}
+			int k = 0;
+			while(stk.hasMoreTokens()) {
+				matrix[i][k] = nextInt(stk);
+				if(matrix[i][k] == 1) queue.add(new Pair(i,k));
+				k++;
 			}
 		}
-		BFS(tomato,justCounter,nodeQueue);
-		int result = resultTomato - justCounter.row;
-		if(result != 0) System.out.println(-1);
-		else System.out.println(justCounter.col-1);
+	}
+	
+	static void Solve() throws IOException {
+		int day = BFS();
+		boolean check = true;
+		for (int i = 0; i < ROW; i++) {
+			for (int j = 0; j < COL; j++) {
+				if(matrix[i][j] == 0) {check = false; break; } 
+			}
+		}
+		if(check == false) System.out.println(-1);
+		else System.out.println(day);
+	}
+	static int BFS() {
 		
-		
-		
+		int ret = 0;
+
+		boolean check;
+		int size,r,c,nr,nc;
+		Pair pair;
+		while(!queue.isEmpty()) {
+			check = false;
+			size = queue.size();
+			for (int i = 0; i < size; i++) {
+				pair = queue.poll();
+				r = pair.a;
+				c = pair.b;
+				for (int k = 0; k < 4; k++) {
+					nr = r + dirRow[k];
+					nc = c + dirCol[k];
+					if(0 <= nr && nr < ROW && 0 <= nc && nc < COL && matrix[nr][nc] == 0) {
+						matrix[nr][nc] = 1;
+						queue.add(new Pair(nr,nc));
+						check = true;
+					}
+				}
+			}
+			if(check == false) return ret;
+			ret++;
+		}
+		return ret;
+	}
+	
+	static class Pair {
+		public int a,b;
+
+		public Pair(int a, int b) {
+			super();
+			this.a = a;
+			this.b = b;
+		}
 		
 	}
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void BFS(int[][] tomato, Node counter, Queue<Node> turnQueue) {
-		while (turnQueue.isEmpty() == false) {
-			int fix = turnQueue.size();
-			for (int i = 0; i < fix; i++) {
-				Node visit = turnQueue.poll();
-				counter.row++;
-				FindingNext(tomato, turnQueue, visit);
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
 			}
-			counter.col++;
+			System.out.println();
 		}
-		
+		System.out.println();
 	}
-	
-	static void FindingNext(int[][] tomato, Queue<Node> turnQueue, Node curPos) {
-		Node[] dirs = new Node[4];
-		if(curPos.row-1 >= 0 && tomato[curPos.row-1][curPos.col] == 0) dirs[0] = new Node(curPos.row-1,curPos.col);
-		if(curPos.row+1 < tomato.length && tomato[curPos.row+1][curPos.col] == 0) dirs[1] = new Node(curPos.row+1,curPos.col);
-		if(curPos.col-1 >= 0 && tomato[curPos.row][curPos.col-1] == 0) dirs[2] = new Node(curPos.row,curPos.col-1);
-		if(curPos.col+1 < tomato[0].length && tomato[curPos.row][curPos.col+1] == 0) dirs[3] = new Node(curPos.row,curPos.col+1);
-		
-		for(int i =0; i <dirs.length; i++) {
-			if(dirs[i] != null) { 
-				tomato[dirs[i].row][dirs[i].col] = 2;
-				turnQueue.add(dirs[i]);
-			}
-		}
-	}
-}
-
-class Node {
-	public int row;
-	public int col;
-	public Node(int row, int col) {
-		super();
-		this.row = row;
-		this.col = col;
-	}
-	
 }
 
 // ************************************** //
