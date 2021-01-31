@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
@@ -14,78 +14,121 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 public class Main {
-	static final int UNVISIT = 0;
-	static final int VISIT = 1;
-	static final int UNCYCLE = 2;
-	static final int CYCLE = 3;
-
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		int[] dirs = new int[100001];
-		int[] check = new int[100001]; // automatically All 0, 0 = no visit, 1 = visit, 2 = Uncycled ,3 = Cycled
-		Stack<Integer> tracer = new Stack<Integer>();
-		
-		int testCount = io.inputInt();
-		for (int test = 0; test < testCount; test++) {
-			int total = io.inputInt();
-			StringTokenizer stk = new StringTokenizer(io.inputStr());
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 100001;
+	
+	static int TEST,N;
+	
+	static int[] graph = new int[MAX];
+	static int[] visit = new int[MAX];
+	static boolean[] cycle = new boolean[MAX];
+	
+	public static void main(String[] args) throws IOException {	
+		TEST = io.inputInt();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < TEST; i++) {
+			Init();
+			sb.append(Solve());
+			sb.append('\n');
 			
-			for (int i = 1; i <= total; i++)
-				dirs[i] = Integer.parseInt(stk.nextToken());
-			
-			// -------------------------- Efficiency -----------------------------
-			for(int i=1;i<= total; i++) {
-				DFS(dirs, i, check, tracer, total);
-			}
-			int resultSum = 0;
-			for (int i = 1; i <= total; i++) {
-				if (check[i] == UNCYCLE)
-					resultSum++;
-			}
-			System.out.println(resultSum);
-			ClearCheck(check, total);
 		}
-		
-	}
-	static public void ClearCheck(int[] arr,int size) {
-		for (int i = 1; i <= size; i++) arr[i] = 0;
-	}
-	static public void DFS(int[] links, int pos, int[] check, Stack<Integer> tracer,int maxSize) {
-		if(check[pos] >= UNCYCLE) return;
-		int curPos = pos;
-		while (true) {
-			check[curPos] = VISIT;
-			tracer.push(curPos);
-			int nextVisit = links[curPos];
-			if (check[nextVisit] == VISIT) {
-				Cycles(check,tracer,nextVisit);
-				return;
-			} else if (check[nextVisit] >= UNCYCLE) {
-				NoCycles(check,tracer);
-				return;
-			}
-			else {
-				curPos = nextVisit;
-			}
-		}
-	}
-	static public void Cycles(int[] check, Stack<Integer> tracer, int pos) {
-		int next;
-		check[pos] = CYCLE;
-		while((next = tracer.pop()) != pos) {
-			check[next] = CYCLE;
-		}
-		NoCycles(check,tracer);
+		System.out.print(sb.toString());
 	}
 	
-	static public void NoCycles(int[] check, Stack<Integer> tracer) {
-		int next = -1;
-		while(tracer.isEmpty() == false) {
-			next = tracer.pop();
-			check[next] = UNCYCLE;
+	static void Init() throws IOException{
+		N = io.inputInt();
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		for (int i = 0; i < N ; i++) {
+
+			graph[i] = nextInt(stk)-1;
+			visit[i] = (graph[i] == i) ? INF:-1;
+			cycle[i] = (graph[i] == i) ? true:false;
+			
 		}
+
+	}
+	
+	static int Solve() throws IOException {
+		int ret = 0;
+		int t = 0;
+		boolean check = false;
+		for (int i = 0; i < N; i++) {
+			if(visit[i] == -1) Cycle_Check(i,++t);
+		}
+		for (int i = 0; i < N; i++) {
+			if(cycle[i]) ret++;
+		}
+		return N-ret;
 	}
 
+	//항상 사이클 정점 갯수 리턴. (정점들이 사이클이 항상 존재하는 문제)
+	static void Cycle_Check(int here,int travel) {
+		int there = graph[here];
+		
+		//신규 사이클 발견 생성
+		if(visit[here] == travel && cycle[here] == false) {
+			cycle[here] = true;
+			int pos = graph[here];
+			while(pos != here) {
+				cycle[pos] = true;
+				pos = graph[pos];
+			}
+			return;
+		}
+		else if(cycle[here] == true) return;
+		else if(visit[here] != -1) return;
+		
+		// 탐색의 시작
+		visit[here] = travel;
+		Cycle_Check(there, travel);
+	}
+
+	
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			System.out.print("[" + i + "] : ");
+			for (int j = 0; j < arr[0].length; j++) {
+				System.out.print(arr[i][j] + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
 
 // ************************************** //
