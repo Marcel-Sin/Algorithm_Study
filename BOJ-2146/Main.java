@@ -3,162 +3,159 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100;
+	
+	static int N;
+	
+	static int[][] map = new int[MAX][MAX];
+	static boolean[][] visit = new boolean[MAX][MAX];
+	
+	static int[] bridge = new int[10000];
+	
+	static int[] dirRow = {-1,1,0,0};
+	static int[] dirCol = {0,0,-1,1};
+	
+	static Queue<WorkSite> queue = new LinkedList<WorkSite>();
 
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		StringTokenizer stk;
-		Vector<Integer> v = new Vector<Integer>();
-		int sizeN = io.inputInt(); 
-		int[][] map = new int[sizeN][sizeN];
-		
-		for(int i=0; i<sizeN; i++) {
-			stk = new StringTokenizer(io.inputStr());
-			for(int j=0; j<sizeN; j++) {
-				map[i][j] = nextInt(stk);
-			}
-		}
-		
-		int lastContin = Connection(map);
-		int curContin = 2;
-		while(curContin <= lastContin) {
-			for(int i=0; i<sizeN; i++) {
-				for(int j=0; j<sizeN; j++) {
-					if(map[i][j] == curContin) {
-						Bridge(map, v, new Node(i,j));
-						BridgeClear(map);
-						curContin++;
-					}
-				}		
-			}
-		}
-		Collections.sort(v);
-		System.out.println(v.elementAt(0));
-		
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(BFS());
 	}
 	
+	static void Init() throws IOException{
+		N = io.inputInt();
+		
+		int temp = 0;
+		for (int i = 0; i < N; i++) {
+			StringTokenizer stk = new StringTokenizer(io.inputStr());
+			for (int j = 0; stk.hasMoreTokens(); j++) {
+				temp = nextInt(stk);
+				map[i][j] = (temp == 1) ? -1:0;
+			}
+		}
+		int landnum = 1;
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				if(map[i][j] == -1) DFS(i,j,landnum++); 
+			}
+		}
+	}
+	static void DFS(int i, int j, int land) {
+		map[i][j] = land;
+		visit[i][j] = true;
+		queue.add(new WorkSite(i, j, land));
+		int nr,nc;
+		for (int k = 0; k < 4; k++) {
+			nr = i + dirRow[k]; nc = j + dirCol[k];
+			if(0 <= nr && nr < N && 0 <= nc && nc < N && map[nr][nc] == -1 && visit[nr][nc] == false) DFS(nr,nc,land);
+		}
+	}
+
+	static int BFS() {
+		
+		//DFS에서 이미 출발 지점이 처리됐음. (Land 번호 순으로 queue에 존재)
+		
+		int ret = INF,nr,nc,current_Island;
+		WorkSite worksite;
+		current_Island = 0; 
+		while(!queue.isEmpty()) {
+			
+			worksite = queue.poll();
+			
+			// 정답 찾은 상황에서, 모든 섬을 한바퀴 다 돌았음. 더 나아질수는 없음.
+			if(ret != INF && current_Island > worksite.land ) break;
+			// 이번 섬의 외곽 다리 건설이 시작됨. (섬의 번호는 1번부터 시작되므로 반드시 동작)
+			else if(current_Island != worksite.land) {
+				current_Island = worksite.land;
+				bridge[current_Island]++;
+			}
+			
+			for (int i = 0; i < 4; i++) {
+				nr = worksite.row + dirRow[i];
+				nc = worksite.col + dirCol[i];
+				if(0 <= nr && nr < N && 0 <= nc && nc < N) {
+					// *Case1* 다음 탐색 지역이 바다면, 현재 섬의 번호로 다리를 짓는다.
+					if(map[nr][nc] == 0) {
+						map[nr][nc] = current_Island;
+						queue.add(new WorkSite(nr,nc,current_Island));
+					}
+					// *Case2* 바다도 아닌데, 현재 섬의 번호랑 다르다. (정답인 또 다른 섬 발견)
+					else if(map[nr][nc] != current_Island) {
+						int another = map[nr][nc];
+						// 현재 처리 타이밍에 더 빠른게 있을 수 있음.
+						ret = Min(ret,bridge[another]+bridge[current_Island]-1);
+					}
+					// 그외는 같은 섬의 번호이므로 무시
+				}
+			}
+
+		}
+		return ret;
+	}
 	
+	static class WorkSite {
+		public int row,col,land;
+
+		public WorkSite(int row, int col, int land) {
+			super();
+			this.row = row;
+			this.col = col;
+			this.land = land;
+		}
+
+	
+	}
+		
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
-	static public int Connection(int[][] map) {
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		int continent = 1;
-		for(int i = 0; i < map.length; i++) {
-			for(int j = 0; j < map[0].length; j++) {
-				if(map[i][j] == 1) {
-					continent++;
-					
-					map[i][j] = continent;
-					Node newVisit = new Node(i,j);
-					nodeQueue.add(newVisit);
-					while(nodeQueue.isEmpty() == false) {
-						Node visit = nodeQueue.poll();
-						MakingContin(map, nodeQueue, visit, continent);
-					}
-				}
-			}
-		}
-		return continent;
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
-	static public void BridgeClear(int[][] map) {
-		for(int i=0; i<map.length; i++) {
-			for(int j=0; j<map[0].length; j++) {
-				if(map[i][j] == -1) map[i][j] = 0;
-			}
-		}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
 	}
-	
-	static public void Bridge(int[][] map,Vector<Integer> storage,Node start) {
-		Queue<Node> bridgeQueue = new LinkedList<Node>();
-		int bridgeSize = 0;
-		int contin = map[start.row][start.col];
-		for(int i=0; i<map.length; i++) {
-			for(int j=0; j<map[0].length; j++) {
-				if(map[i][j] == contin) bridgeQueue.add(new Node(i,j));
-			}
-		}
-		while(bridgeQueue.isEmpty() == false) {
-			int loop = bridgeQueue.size();
-			for(int i=0; i<loop; i++) {
-				Node visit = bridgeQueue.poll();
-				if(MakingBridge(map, bridgeQueue, visit, contin) == false) {
-					bridgeQueue.clear();
-					storage.add(bridgeSize);
-					break;
-				}
-			}
-			bridgeSize++;
-		}
-		
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
 	}
-	
-	public static boolean MakingBridge(int[][] map, Queue<Node> queue,Node cur,int contin) {
-		Node[] dir = new Node[4];
-		
-
-		if(cur.row-1 >= 0 ) dir[0] = new Node(cur.row-1,cur.col); //south
-		if(cur.col-1 >= 0 ) dir[1] = new Node(cur.row,cur.col-1); //west
-		if(cur.row+1 < map.length ) dir[2] = new Node(cur.row+1,cur.col); //north
-		if(cur.col+1 < map[0].length ) dir[3] = new Node(cur.row,cur.col+1); //east
-		
-		for(int i = 0; i < dir.length; i++) {
-			if(dir[i] != null && map[dir[i].row][dir[i].col] != contin && map[dir[i].row][dir[i].col] > 1) {
-				return false;
-			}
-		}
-		
-		for(int i = 0; i < dir.length; i++) {
-			if(dir[i] != null && map[dir[i].row][dir[i].col] == 0) {
-				map[dir[i].row][dir[i].col] = -1;
-				queue.add(dir[i]);
-			}
-		}
-		return true;
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
 	}
-
-	static void MakingContin(int[][] map, Queue<Node> queue,Node cur,int contin) {
-		Node[] dir = new Node[4];
-		
-
-		if(cur.row-1 >= 0 ) dir[0] = new Node(cur.row-1,cur.col); //south
-		if(cur.col-1 >= 0 ) dir[1] = new Node(cur.row,cur.col-1); //west
-		if(cur.row+1 < map.length ) dir[2] = new Node(cur.row+1,cur.col); //north
-		if(cur.col+1 < map[0].length ) dir[3] = new Node(cur.row,cur.col+1); //east
-		
-		
-		for(int i = 0; i < dir.length; i++) {
-			if(dir[i] != null && map[dir[i].row][dir[i].col] == 1) {
-				map[dir[i].row][dir[i].col] = contin;
-				queue.add(dir[i]);
-			}
-		}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
 	}
-	
-	
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-class Node {
-	public int row;
-	public int col;
-	public Node(int row, int col) {
-		super();
-		this.row = row;
-		this.col = col;
-	}
-	
-}
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
