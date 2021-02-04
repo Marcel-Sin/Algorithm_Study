@@ -3,90 +3,105 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
-
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		HashMap<Integer, Node> tree = new HashMap<Integer, Node>();
-		StringTokenizer stk;
-		int count = io.inputInt();
-		boolean[] check = new boolean[count+1];
-		
-		for(int i=1; i<=count; i++) {
-			tree.put(i,new Node(tree,i));
-		}
-		
-		for(int i=1; i<count; i++) {
-			stk = new StringTokenizer(io.inputStr());
-			Join(tree,nextInt(stk),nextInt(stk));
-		}
-		BFS(tree,check,1);
-		for(int i=2; i<=count; i++) {
-			io.write(tree.get(i).Action()+"\n");
-		}
-		io.close();
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100001;
 	
+	static int N;
+	
+	static ArrayList<Integer>[] graph = new ArrayList[MAX];
+	static int[] parent = new int[MAX];
+
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve();
+	}
+	static void Init() throws IOException{
+		for (int i = 0; i < graph.length; i++) {
+			graph[i] = new ArrayList<Integer>();
+		}
+		N = io.inputInt();
+		Arrays.fill(parent, -1);
+		for (int i = 0; i < N-1; i++) {
+			StringTokenizer stk = new StringTokenizer(io.inputStr());
+			int a = nextInt(stk);
+			int b = nextInt(stk);
+			Connect(a,b);
+		}
+	}
+	
+	static void Solve() {
+		DFS(1,1);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 2; i <= N; i++) {
+			sb.append(parent[i]);
+			sb.append('\n');
+		}
+		System.out.println(sb.toString());
+	}
+	
+	static void DFS(int from ,int here) {
+		parent[here] = from;
+		for (int i = 0; i < graph[here].size(); i++) {
+			int there = graph[here].get(i);
+			if(parent[there] == -1) DFS(here,there);
+		}
 	}
 
-	public static void Join(HashMap<Integer, Node> tree, int a, int b) {
-		tree.get(a).link.add(b);
-		tree.get(b).link.add(a);
+	static void Connect(int a,int b) {
+		graph[a].add(b);
+		graph[b].add(a);
+		
 	}
-	
-	public static int nextInt(StringTokenizer stk) {
+		
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	
-	public static void BFS(HashMap<Integer, Node> tree,boolean[] check, int start) {
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		nodeQueue.add(tree.get(start));
-		check[start] = true;
-		while(nodeQueue.isEmpty() == false) {
-			Node parent = nodeQueue.poll();
-			for(int nextKey : parent.link) {
-				if(check[nextKey] == false) {
-					Node nextNode = tree.get(nextKey);
-					nextNode.parent = parent.content;
-					check[nextKey] = true;
-					nodeQueue.add(nextNode);
-				}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
 			}
+			System.out.println();
 		}
-		
-	}
-	
-}
-
-class Node {
-	
-	public HashMap<Integer, Node> tree;
-	public int content;
-	public int parent;
-	public HashSet<Integer> link;
-	
-	public Node(HashMap<Integer, Node> tree, int content) {
-		super();
-		this.tree = tree;
-		this.content = content;
-		this.parent = -1;
-		link = new HashSet<Integer>();
-	}
-	
-	public int Action() {
-		return parent;
+		System.out.println();
 	}
 }
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
