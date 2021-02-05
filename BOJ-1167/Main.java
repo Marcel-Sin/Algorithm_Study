@@ -3,108 +3,130 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
-
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		int totalvertex = io.inputInt();
-		Node[] tree = new Node[totalvertex+1];
-		StringTokenizer stk;
-		for(int i=1; i<=totalvertex; i++) tree[i] = new Node(i);
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100001;
+	
+	static int N,longest_Vertex,longest_Length;
+	
+	static ArrayList<Pair>[] graph = new ArrayList[MAX];
+	static boolean[] visited = new boolean[MAX];
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(Solve());
+	}
+	static void Init() throws IOException{
+		for (int i = 0; i < graph.length; i++) { graph[i] = new ArrayList<Pair>(10); }
+		N = io.inputInt();
 		
-		int from,to,dist;
-		for(int i=1; i <= totalvertex; i++) {
-			stk = new StringTokenizer(io.inputStr());
-			from = nextInt(stk);
+		//Input Format : 4 [2 4] [3 3] [5 6] -1
+		int curVertex,to,weight;
+		for (int i = 0; i < N; i++) {
+			StringTokenizer stk = new StringTokenizer(io.inputStr());
+			curVertex = nextInt(stk);
 			while((to = nextInt(stk)) != -1) {
-				dist = nextInt(stk);
-				Join(tree,from,to,dist);
+				Connect(curVertex,to,nextInt(stk));
 			}
 		}
-		BFS(tree,1);
-		int root = MaxVertex(tree);
-		ClearPast(tree);
-		BFS(tree,root);
-		root = MaxVertex(tree);
-		System.out.println(tree[root].past);
+		
+		
+	}
+	
+	static int Solve() {
+		
+		//첫번째 가장 깊숙한 곳 찾기
+		longest_Length = -1;
+		longest_Vertex = 1;
+		Arrays.fill(visited, false);
+		DFS(1,0); 
+		
+		//가장 깊숙한 곳에서 다른 깊숙한 곳 찾아보기
+		longest_Length = -1;
+		Arrays.fill(visited, false);
+		DFS(longest_Vertex,0); 
+		
+		return longest_Length;
+	}
+	
+	static void DFS(int here,int curLen) {
+		visited[here] = true;
+		if(curLen > longest_Length) {
+			longest_Vertex = here;
+			longest_Length = curLen;
+		}
+		for (int i = 0; i < graph[here].size(); i++) {
+			Pair pair = graph[here].get(i);
+			int there = pair.v;
+			if(visited[there] == false) DFS(there,curLen+pair.cost);
+		}
 	}
 
-	public static int MaxVertex(Node[] tree) {
-		int max = 1;
-		for(int i=1; i<tree.length; i++) {
-			if(tree[max].past < tree[i].past) max = i;
-		}
-		return max;
+	static void Connect(int a,int b,int w) {
+		graph[a].add(new Pair(b,w));
+		graph[b].add(new Pair(a,w));
 	}
-	
-	public static void ClearPast(Node[] tree) {
-		for(int i=1; i<tree.length; i++) tree[i].past = 0;
-	}
-	
-	public static void Join(Node[] tree, int from, int to,int dist) {
-		tree[from].links.add(new NodeLink(to,dist));
-	}
-	
-	public static void BFS(Node[] tree, int start) {
-		boolean[] check = new boolean[tree.length+1];
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		nodeQueue.add(tree[start]);
-		check[start] = true;
 		
-		while(nodeQueue.isEmpty() == false) {
-			Node root = nodeQueue.poll();
-			for(NodeLink link  :  root.links) {
-				if(check[link.to]  == false) {
-					tree[link.to].past = root.past + link.dist;
-					check[link.to] = true;
-					nodeQueue.add(tree[link.to]);
-				}
-			}
+	static class Pair {
+		public int v,cost;
+
+		public Pair(int v, int cost) {
+			super();
+			this.v = v;
+			this.cost = cost;
 		}
+
 		
 	}
 	
-	public static int nextInt(StringTokenizer stk) {
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	
-
-	
-}
-
-class Node {
-
-	public int name;
-	public int past;
-	public Vector<NodeLink> links;
-	
-	public Node(int name) {
-		this.name = name;
-		this.past = 0;
-		this.links = new Vector<NodeLink>();
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
-}
-
-class NodeLink {
-
-	public int to;
-	public int dist;
-	
-	public NodeLink(int to, int dist) {
-		super();
-		this.to = to;
-		this.dist = dist;
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
 	}
 }
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
