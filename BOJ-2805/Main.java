@@ -4,69 +4,110 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.Arrays;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
-
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		
-		StringTokenizer strtok = new StringTokenizer(io.inputStr());
-		
-		// ---------------input---------------------
-		int wood_Count = nextInt(strtok);
-		int needed_Length = nextInt(strtok);
-		int[] woods = new int[wood_Count];
-		strtok = new StringTokenizer(io.inputStr());
-		int theLongestWood = 0;
-		for (int i = 0; i < woods.length; i++) {
-			woods[i] = nextInt(strtok);
-			if(woods[i] > theLongestWood) theLongestWood = woods[i]; 
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 1000001;
+	
+	static int N,M;
+	
+	static long max_Tree;
+	static int[] tree = new int[MAX];
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(Solve());
+	}
+	static void Init() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		// K가 랜선 갯수, N은 최소 요구 갯수
+		N = nextInt(stk);
+		M = nextInt(stk);
+		max_Tree = 0;
+		stk = new StringTokenizer(io.inputStr());
+		for (int i = 0; i < N; i++) {
+			tree[i] = nextInt(stk);
+			max_Tree = Max(tree[i],max_Tree);
 		}
-		// ----------------------------------------
+	}
+	
+	static long Solve() {
+		// 이진탐색에서 최대 범위는 exclusive, +1을 해준다.
+		long wood = 0, max_height = 0;
+		long low=1, high=max_Tree+1, mid;
 		
 		
-		int min, max, cutter, passedCutLength;
-		min = 1;					// 절단기 최소 높이
-		max = theLongestWood; // 절단기 최대 높이
-		passedCutLength = 0;
-		
-		while(min <= max) {
-			cutter = (min+max)/2;
-			long totalWoodLength = Saw(woods,cutter);
-			if(totalWoodLength < needed_Length) { // "길이가 모자르므로 더 낮춰서 잘라!"
-				max = cutter-1;
+		// 만들 수 없는 경우를 주지 않음. (모든 상황에서 이진탐색 100% 성공)
+		while(low < high) {
+			mid = (low+high)/2;
+			wood = Trim_Tree(mid);
+			if(M <= wood) {
+				max_height = Max(max_height,mid);
+				low = mid+1;
 			}
-			else if(totalWoodLength >= needed_Length) { // "필요한량은 맞는데, 좀 더 나무를 남겨보자."
-				passedCutLength = cutter;
-				min = cutter+1;
+			else {
+				high = mid;
 			}
 		}
-		System.out.println(passedCutLength);
 		
+		return max_height;
 	}
 	
 	
-	public static long Saw(int[] woods, int cutLength) {
-		long meter=0;
-		for (int i = 0; i < woods.length; i++) if(woods[i] > cutLength)meter += (woods[i]-cutLength);
-		return meter;
+	static long Trim_Tree(long height) {
+		long ret = 0;
+		for (int i = 0; i < N; i++) {
+			ret += (tree[i]-height > 0) ? tree[i]-height:0;
+		}
+		return ret;
 	}
 	
-	public static int nextInt(StringTokenizer stk) {
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
