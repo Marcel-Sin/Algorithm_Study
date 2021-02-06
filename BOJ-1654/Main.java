@@ -4,59 +4,109 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
-
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 10001;
+	
+	static int K,N;
+	
+	static long max_lan;
+	static long[] lan = new long[MAX];
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(Solve());
+	}
+	static void Init() throws IOException{
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int K = nextInt(stk), N = nextInt(stk);
-		long[] len = new long[K];
-		long low,mid,high,maxLen=0;
-		for(int i=0; i<K; i++) {
-			len[i] = io.inputInt();
-			if(len[i] > maxLen) maxLen = len[i];
+		// K가 랜선 갯수, N은 최소 요구 갯수
+		K = nextInt(stk);
+		N = nextInt(stk);
+		max_lan = 0;
+		for (int i = 0; i < K; i++) {
+			lan[i] = io.inputInt();
+			max_lan = Max(lan[i],max_lan);
 		}
-		
-		low = 1;
-		high = maxLen;
-		mid = (low+high)/2;
-		
-		while(low <= high) {
-
-			long lenCounter = LenCounting(len, mid);
-			//System.out.println(low+"~"+high+"(mid :"+mid+") = "+lenCounter);
-			if( lenCounter < N) {
-				high = mid-1;
-				mid = (low+high)/2;
-			} 
-			else if ( lenCounter >= N) {
-				maxLen = mid;
-				low = mid+1;
-				mid = (low+high)/2;
-			}
-		}
-		System.out.println(maxLen);
-
-	}
-	public static int nextInt(StringTokenizer stk) {
-		return Integer.parseInt(stk.nextToken());
-	}
-
-	public static long LenCounting(long[] len, long cutLength) {
-		long counter = 0;
-		for(int i=0; i < len.length; i++) counter += len[i]/cutLength;	
-		return counter;
 	}
 	
+	static long Solve() {
+		// 이진탐색에서 최대 범위는 exclusive, +1을 해준다.
+		long count = 0, ret_length = 0;
+		long low=1, high=max_lan+1, mid;
+		
+		
+		// 만들 수 없는 경우를 주지 않음. (모든 상황에서 이진탐색 100% 성공)
+		while(low < high) {
+			mid = (low+high)/2;
+			count = Cut_Lan(mid);
+			if(N <= count) {
+				ret_length = Max(ret_length, mid);
+				low = mid+1;
+			}
+			else {
+				high = mid;
+			}
+		}
+		
+		return ret_length;
+	}
+	
+	
+	static long Cut_Lan(long min_length) {
+		long count = 0;
+		for (int i = 0; i < K; i++) {
+			count += (lan[i]/min_length);
+		}
+		return count;
+	}
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
