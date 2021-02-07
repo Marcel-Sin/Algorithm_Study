@@ -5,69 +5,113 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
-
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		
-		// ---------------input---------------------
-		StringTokenizer strtok = new StringTokenizer(io.inputStr());
-		int home_Count = nextInt(strtok);
-		int needed_Hub = nextInt(strtok);
-		int[] homes = new int[home_Count];
-		for (int i = 0; i < homes.length; i++) homes[i] = io.inputInt();
-		Arrays.sort(homes);
-		int theFarthestHome = homes[homes.length-1];
-		// ----------------------------------------
-		
-		int min,max,hubGap,passedValue;
-		min = 1;
-		max = (theFarthestHome/needed_Hub)+1;
-		hubGap = 0;
-		passedValue = 0;
-		
-		while(min <= max) {
-			hubGap = (min+max)/2;
-			int installed_Hub = HUB_Install(homes, hubGap);
-			if(installed_Hub < needed_Hub) {
-				max = hubGap-1;
-			}
-			else if(installed_Hub >= needed_Hub) {
-				passedValue = hubGap;
-				min = hubGap+1;
-			}
-		}
-		
-		System.out.println(passedValue);
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 200001;
+	
+	static int N,C;
+	
+	static int max_Dist;
+	static int[] distX;
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		System.out.println(Solve());
 	}
-
-	public static int HUB_Install(int[] homes, int gap) {
-		int counter = 1;
-		int installed = 0;
-		for(int i=1; i < homes.length; i++) {
-			if(homes[i]-homes[installed] < gap) continue;
-			installed = i;
-			counter++;
+	static void Init() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		// N가 집의 갯수, C는 최소 요구 갯수
+		N = nextInt(stk);
+		C = nextInt(stk);
+		max_Dist = 0;
+		distX = new int[N];
+		for (int i = 0; i < N; i++) {
+			distX[i] = io.inputInt();
+			max_Dist = Max(distX[i],max_Dist);
 		}
-		return counter;
+		Arrays.sort(distX);
 	}
 	
-	public static int nextInt(StringTokenizer stk) {
+	static long Solve() {
+		// 이진탐색에서 최대 범위는 exclusive, +1을 해준다.
+		int count,dist = 0;
+		int low=0, high=max_Dist+1, mid;
+		
+		
+		// 만들 수 없는 경우를 주지 않음. (모든 상황에서 이진탐색 100% 성공)
+		while(low < high) {
+			mid = (low+high)/2;
+			count = Connecter_Setup(mid);
+			if(C <= count) {
+				dist = Max(dist,mid);
+				low = mid+1;
+			}
+			else {
+				high = mid;
+			}
+		}
+		
+		return dist;
+	}
+	
+	// 설치한 공유기의 대수 반환
+	static int Connecter_Setup(int interDist) {
+		int between = 0,count = 0;
+		for (int i = 0; i < N; i++) {
+			if (distX[i] >= between) {
+				between = distX[i]+interDist;
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
