@@ -3,90 +3,119 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class Main {
-
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		StringBuilder sb = new StringBuilder();
-		int haveCount = io.inputInt();
-		int[] have = new int[haveCount];
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 500001;
+	static final int MIN_VALUE = -10000000;
+	static final int MAX_VALUE = 10000000;
+	
+	static int N1,N2;
+	
+	static int[] problem;
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve();
+	}
+	static void Init() throws IOException{
+		N1 = io.inputInt();
+		problem = new int[N1];
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		for(int i = 0; i < haveCount; i++) have[i] = nextInt(stk);
-		
-		int findCount = io.inputInt();
-		int[] find = new int[findCount];
-		stk = new StringTokenizer(io.inputStr());
-		for(int i = 0; i < findCount; i++) find[i] = nextInt(stk);
-		Arrays.sort(have);
-		
-		int lower,upper;
-		for (int i = 0; i < findCount; i++) {
-			upper = Upper_Bound(have, find[i]);
-			if(upper == -20000000) {
-				sb.append('0');
-				sb.append(' ');
-				continue;
-			}
-			lower = Lower_Bound(have, find[i]);
-			upper = upper - lower +1;
-			sb.append(upper+" ");
+		for (int i = 0; i < N1; i++) {
+			problem[i] = nextInt(stk);
 		}
-		io.write(sb.toString());
-		io.close();
-	
+		Arrays.sort(problem);
 	}
 
+	static void Solve() throws IOException {
+		N2 = io.inputInt();
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < N2; i++) {
+			int num = nextInt(stk);
+			int value1 = Lower_Bound(num, N1);
+			if(value1 == -1) {sb.append(0); sb.append(' '); continue;}
+			int value2 = Upper_Bound(num, N1);
+			sb.append(value2-value1);
+			sb.append(' ');
+		}
+		System.out.println(sb.toString());
+	}
+	
+	//키 값의 첫번째 위치 반환
+	static int Lower_Bound(int key,int size) {
+		int low=0, high=size, mid;
+		while(low < high) {
+			mid = (low+high)/2;
+			if(problem[mid] < key) { low = mid+1; }
+			else high = mid;
+		}
+		if(low < size && problem[low] == key) return low;
+		else return -1;
+	}
+	
+	//값보다 큰 첫번째 위치 반환
+	static int Upper_Bound(int key,int size) {
+			int low=0, high=size, mid;
+			while(low < high) {
+				mid = (low+high)/2;
+				if(problem[mid] <= key) { low = mid+1; }
+				else high = mid;
+			}
+			if(0 <= low-1 && problem[low-1] == key) return low;
+			else return -1;
+	}
+	
+	
 
-	public static int Lower_Bound(int[] arr, int target) {
-		int low,high,mid,result;
-		low = 0;
-		high = arr.length-1;
-		result = -20000000;
-		while(low <= high) {
-			mid = (low+high)/2;
-			if(target <= arr[mid]) {
-				if(target == arr[mid]) result = mid;
-				high = mid - 1;
-			}
-			else low = mid + 1;
-		}
-		return result;
-	}
-	public static int Upper_Bound(int[] arr, int target) {
-		int low,high,mid,result;
-		low = 0;
-		high = arr.length-1;
-		result = -20000000;
-		while(low <= high) {
-			mid = (low+high)/2;
-			if(target >= arr[mid]) {
-				if(target == arr[mid]) result = mid;
-				low = mid + 1;
-			}
-			else high = mid - 1;
-		}
-		return result;
-	}
 	
-	
-	public static int nextInt(StringTokenizer stk) {
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
+	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
