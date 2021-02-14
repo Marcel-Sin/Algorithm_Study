@@ -3,66 +3,106 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.Random;
 import java.util.StringTokenizer;
 
-
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 1024*3;
+	
+	static int N;
+	static char[][] matrix = new char[MAX][MAX];
+	
 	static StringBuilder sb = new StringBuilder();
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		int size = io.inputInt();
-		char[][] arr = new char[size][size*2-1];
-		for(int i = 0; i < arr.length; i++) Arrays.fill(arr[i],' ');
-		
-		DC_Star(arr,size,size-1,size-1);
-		for(int i = 0; i < arr.length; i++) {
-			io.bw.write(arr[i]);
-			io.bw.write('\n');
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve(0,N-1,N);
+		for (int i = 0; i < N; i++) {sb.append(matrix[i]); sb.append('\n');}
+		System.out.println(sb.toString());
+	}
+	
+	static void Init() throws IOException{
+		N = io.inputInt();
+		for (int i = 0; i < N; i++) {
+			matrix[i] = new char[N*2];
+			Arrays.fill(matrix[i],' ');
 		}
-		io.close();
-
 	}
+	
+	static void Solve(int R,int C, int n) throws IOException{
+		// (기본) 기준점을 상단 Row, 중심 Col 기준으로 잡고 재귀한다.
+		// (재귀종료) offset이 1이 되었을 시, matrix로 반환한다. 
+		int offset = n / 2;
+		if(offset > 1) {
+			Solve(R,C,offset);
+			Solve(R+offset,C-offset,offset);
+			Solve(R+offset,C+offset,offset);
+		}
+		else {
+			matrix[R][C] = '*';
+			matrix[R+1][C-1] = matrix[R+1][C+1] = '*';
+			matrix[R+2][C-2] = matrix[R+2][C-1] = matrix[R+2][C] = matrix[R+2][C+1] = matrix[R+2][C+2] = '*';
+		}
+	}
+	
 		
 	
-	static void DC_Star(char[][] arr,int size ,int row, int col) {
-		if (size == 3) {
-			Star(arr,row,col);
-			return;
-		}
-		int nextSize = size/2;
-		DC_Star(arr,nextSize,row-nextSize,col);
-		DC_Star(arr,nextSize,row,col+nextSize);
-		DC_Star(arr,nextSize,row,col-nextSize);
-	}
 	
-	static void Star(char[][] arr, int row, int col) {
-		//Top
-		arr[row-2][col] = '*';
 
-		//Center
-		arr[row-1][col-1] = '*';
-		arr[row-1][col+1] = '*';
-
-		//bottom
-		arr[row][col-2] = '*';
-		arr[row][col-1] = '*';
-		arr[row][col] = '*';
-		arr[row][col+1] = '*';
-		arr[row][col+2] = '*';
-
-	}
 	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
