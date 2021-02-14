@@ -4,70 +4,118 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
-
 public class Main {
-	static long swapCounter = 0;
-	static int[] sorted = new int[500000];
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		int size = io.inputInt();
-		int[] arr = new int[size];
-		
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		for (int i = 0; i < arr.length; i++) {
-			arr[i] = nextInt(stk);
-		}
-		
-		MergeSort(arr,0,arr.length-1);
-		System.out.println(swapCounter);
-		
-		
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 500000;
+	
+	static int N;
+	static long swap_counter;
+	static int[] problem = new int[MAX];
+	static int[] merge_memory = new int[MAX];
+	
+	static StringBuilder sb = new StringBuilder();
+	
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve();
 	}
 	
-	static void MergeSort(int[] A,int low, int high) {
-		//Base Condition
-		if( low >= high ) return;
+	static void Init() throws IOException{
+		N = io.inputInt();
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		for (int i = 0; i < N; i++) {
+			problem[i] = nextInt(stk);
+		}
+	}
+	static void Solve() throws IOException{
+		swap_counter = 0;
+		MergeSort(problem, 0, N-1, merge_memory);
+		System.out.println(swap_counter);
+	}
+	
 		
-		//Divide
-		int mid = (low + high)/2;
+	static void MergeSort(int[] arr,int low, int high, int[] temp) {
+		//base condition
+		if(high <= low) return;
 		
+		//Divide and Conquer
+		int mid = (low+high)/2;
+		MergeSort(arr,low,mid,temp);
+		MergeSort(arr,mid+1,high,temp);
 		
-		//Conquer
-		MergeSort(A,low,mid);
-		MergeSort(A,mid+1,high);
-		
-		
-		// Combine
-		int i = low, j = mid+1, k = low;
-		for(;k<=high; k++) {
-			if(mid < i) sorted[k] = A[j++];
-			else if(high < j) sorted[k] = A[i++];
-			else if(A[i] <= A[j]) sorted[k] = A[i++];
+		//Merge
+		int l = low, h = mid+1;
+		for (int k = low; k <= high; k++) {
+			if(mid < l) temp[k] = arr[h++];
+			else if(high < h) temp[k] = arr[l++];
+			else if(arr[l] <= arr[h]) temp[k] = arr[l++];    //'<=' 상위인덱스 배열이 더 큰 경우만 else로 추출
 			else {
-				swapCounter += mid-i+1;
-				sorted[k] = A[j++];
+				swap_counter += mid-l+1;
+				temp[k] = arr[h++];
 			}
 		}
 		
-		
 		//Copy
-		for(i = low; i <= high; i++) A[i] = sorted[i];
+		for (int k = low; k <= high; k++) arr[k] = temp[k]; 
 	}
+	
+		
 	
 	
 
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
