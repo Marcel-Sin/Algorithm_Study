@@ -3,86 +3,112 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Stack;
+import java.util.Random;
 import java.util.StringTokenizer;
 
-
 public class Main {
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE;
+	static final int MAX = 2187;
+	
+	static int N;
+	static char[][] matrix = new char[MAX][MAX];
+	
 	static StringBuilder sb = new StringBuilder();
-	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		int size = io.inputInt();
-		char[][] arr = new char[size][size];
-		for(int i = 0; i < arr.length; i++) Arrays.fill(arr[i],' ');
-		
-		DC_star(arr,size,0,0);
-		StringBuilder sb = new StringBuilder();
-		for(int i = 0; i < arr.length; i++) {
-			sb.append(arr[i]);
-			sb.append('\n');
-		}
-		io.write(sb.toString());
-		io.close();
-	}
-		
 	
-	static void DC_star(char[][] arr,int size ,int row, int col) {
-		if (size == 3) {
-			Star(arr,row,col);
-			return;
-		}
-		// 0,0 0,3 0,6
-		// 3,0 3,3 3,6
-		// 6,0 6,3 6,6
-		
-		// 0,0    0,9   0,18
-		// 9,0    9,9   9,18
-		// 18,0  18,9  18,18
-		
-		int nextSize = size/3;
-		DC_star(arr,nextSize,row,col);
-		DC_star(arr,nextSize,row,col+nextSize*1);
-		DC_star(arr,nextSize,row,col+nextSize*2);
-		
-		DC_star(arr,nextSize,row+nextSize*1,col);
-		//DC_star(arr,nextSize,row+nextSize*1,col+nextSize*1);
-		DC_star(arr,nextSize,row+nextSize*1,col+nextSize*2);
-		
-		DC_star(arr,nextSize,row+nextSize*2,col);
-		DC_star(arr,nextSize,row+nextSize*2,col+nextSize*1);
-		DC_star(arr,nextSize,row+nextSize*2,col+nextSize*2);
-		
+	public static void main(String[] args) throws IOException {	
+		Init();
+		Solve(N/2,N/2,N);
+		for (int i = 0; i < N; i++) {sb.append(matrix[i]); sb.append('\n');}
+		System.out.println(sb.toString());
 	}
 	
-	static void Star(char[][] arr, int row, int col) {
-		arr[row][col] = '*';
-		arr[row][col+1] = '*';
-		arr[row][col+2] = '*';
-		arr[row+1][col] = '*';
-		//arr[row+1][col+1] = '*';
-		arr[row+1][col+2] = '*';
-		arr[row+2][col] = '*';
-		arr[row+2][col+1] = '*';
-		arr[row+2][col+2] = '*';
+	static void Init() throws IOException{
+		N = io.inputInt();
+		for (int i = 0; i < N; i++) {
+			matrix[i] = new char[N];
+			Arrays.fill(matrix[i],' ');
+		}
 	}
+	
+	static void Solve(int R,int C, int n) throws IOException{
+		// (기본) 자신을 9방향 중 가운데를 제외하고 재귀한다.
+		// (재귀종료) 크기 n에 대한 오프셋이 1이 됐을 때, matrix로 반환 후 종료한다. 
+		int offset = n / 3;
+		if(1 < offset) {
+			for (int i = R-offset; i <= R+offset; i+=offset) {
+				for (int j = C-offset; j <= C+offset; j+=offset) {
+					if(i == R && j == C) continue;
+					Solve(i,j,offset);
+				}
+			}	
+		}
+		else {
+			for (int i = R-offset; i <= R+offset; i+=offset) {
+				for (int j = C-offset; j <= C+offset; j+=offset) {
+					if(i == R && j == C) continue;
+					matrix[i][j] = '*';
+				}
+			}
+		}
+	}
+	
+		
+	
 	
 
 	
-	
-	
-	
-	
-	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
