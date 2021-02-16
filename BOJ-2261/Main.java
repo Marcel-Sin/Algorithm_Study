@@ -6,10 +6,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
@@ -59,28 +56,28 @@ public class Main {
 			if(ret == 0) return 0;
 			
 			// [low,high]범위에서 mid.x +-d 범위를 가져온다.
-			TreeSet<Pair> rangeTree = new TreeSet<Main.Pair>(new Y_Comparator());
+			ArrayList<Pair> ylist = new ArrayList<Main.Pair>();
 			Pair midPair = problem.get(mid);
 			int minRangeValue = midPair.x-d;
 			int maxRangeValue = midPair.x+d;
-
+			
 			for (int i = low; i <= high; i++) {
 				Pair pair = problem.get(i);
 				if(minRangeValue <= pair.x && pair.x <= maxRangeValue) {
-					rangeTree.add(problem.get(i));
+					ylist.add(problem.get(i));
 				}
 			}
-			
-			Iterator<Pair> iterA = rangeTree.iterator();
-			while(iterA.hasNext()) {
-				Pair here = iterA.next();
-				SortedSet<Pair> sub = rangeTree.subSet(here, new Pair(here.x,here.y+d,0));
-				Iterator<Pair> iterB = sub.iterator();
-				while(iterB.hasNext()) {
-					Pair there = iterB.next();
-					if(here.id == there.id) continue;
+			Collections.sort(ylist,new Y_Comparator());
+			int iterA = 0, iterB = 0, ylist_size = ylist.size();
+			while(iterA < ylist_size) {
+				Pair here = ylist.get(iterA);
+				iterB = iterA+1;
+				while(iterB < ylist_size) {
+					Pair there = ylist.get(iterB++);
+					if(here.y+d < there.y) break;
 					ret = Min(ret,GetDist(here, there));
 				}
+				iterA++;
 			}
 			return ret;
 		}
