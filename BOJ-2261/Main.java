@@ -13,105 +13,117 @@ import java.util.TreeSet;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int NINF = Integer.MIN_VALUE / 4;
-	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 100001;
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100001;
 	
 	static int N;
-	static ArrayList<Pair> problem = new ArrayList<Main.Pair>();
-	
+	static boolean interrupt;
+	static ArrayList<Pair> problem;
 	
 	public static void main(String[] args) throws IOException {
-		problem.ensureCapacity(MAX_SIZE);
 		Init();
-		System.out.println(DC(0,N-1));
+		System.out.println(Solve(0,N-1));
 	}
-
-	static void Init() throws IOException {
+	
+	static void Init() throws IOException{
+		problem = new ArrayList<Main.Pair>(MAX);
 		N = io.inputInt();
 		for (int i = 0; i < N; i++) {
 			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			problem.add(new Pair(nextInt(stk),nextInt(stk)));
+			Pair pair = new Pair(nextInt(stk),nextInt(stk),i);
+			problem.add(pair);
 		}
-		Collections.sort(problem, new X_Comparator());
+		Collections.sort(problem);
+		interrupt = false;
 	}
-	
-	static int DC(int low, int high) {
-		if(low >= high) return INF;
-		else if(high-low == 1) return Dist(problem.get(low),problem.get(high));
-		
-		int mid = (low+high)/2;
-		
-		int leftMin = DC(low,mid);
-		int rightMin = DC(mid+1,high);
-		int ans = Min(leftMin,rightMin);
-		
-		int d = (int)Math.sqrt(ans)+1;
-		int minX = problem.get(mid).x - d;
-		int maxX = problem.get(mid).x + d;
-		
-		//이 트리는 y에 대해서 정렬 되어있음.
-		TreeSet<Pair> tree = new TreeSet<Main.Pair>();
-		for (int i = low; i <= high; i++) {
-			Pair pair = problem.get(i);
-			if(minX <= pair.x && pair.x <= maxX) tree.add(pair);
-		}
-		Iterator<Pair> mainIter = tree.iterator();
-		while(mainIter.hasNext()) {
-			Pair selected_Pair = mainIter.next();
-			Pair toBound = new Pair(0,selected_Pair.y+d);
-			SortedSet<Pair> stree = tree.subSet(selected_Pair, toBound);
-			Iterator<Pair> iter = stree.iterator();
-			int check = 0;
-			while(check < 6 && iter.hasNext()) {
-				Pair cmp = iter.next();
-				if(cmp == selected_Pair) continue;
-				int dist = Dist(selected_Pair,cmp);
-				ans = Min(ans,dist);
-				check++;
+	static int Solve(int low, int high) throws IOException{
+		int ret = INF;
+		int size = high-low+1;
+		// 3개 이하 범위
+		if(size <= 3) {
+			if(size == 1) return ret;
+			if(size > 1) ret = GetDist(problem.get(low),problem.get(low+1));
+			if(size > 2) {
+				ret = Min(ret,GetDist(problem.get(low),problem.get(low+2)));
+				ret = Min(ret,GetDist(problem.get(low+1),problem.get(low+2)));
 			}
+			return ret;
 		}
-		return ans;
-	}
-	
-	
-	static int Dist(Pair a, Pair b) {
-		int xx = (b.x-a.x), yy = (b.y-a.y);
-		xx *= xx;	yy *= yy;
-		return xx+yy;
-	}
-	
-	static class X_Comparator implements Comparator<Pair> {
+		// 3개 이상 범위
+		else {
+			int mid = (low+high)/2;
+			ret = Min(ret, Solve(low,mid));
+			ret = Min(ret, Solve(mid+1,high));
+			int d = (int)Math.sqrt(ret)+1;
+			if(ret == 0) return 0;
+			
+			// [low,high]범위에서 mid.x +-d 범위를 가져온다.
+			TreeSet<Pair> rangeTree = new TreeSet<Main.Pair>(new Y_Comparator());
+			Pair midPair = problem.get(mid);
+			int minRangeValue = midPair.x-d;
+			int maxRangeValue = midPair.x+d;
 
-		@Override
-		public int compare(Pair o1, Pair o2) {
-			if(o1.x == o2.x) return 0;
-			else return (o1.x < o2.x) ? -1:1;
+			for (int i = low; i <= high; i++) {
+				Pair pair = problem.get(i);
+				if(minRangeValue <= pair.x && pair.x <= maxRangeValue) {
+					rangeTree.add(problem.get(i));
+				}
+			}
+			
+			Iterator<Pair> iterA = rangeTree.iterator();
+			while(iterA.hasNext()) {
+				Pair here = iterA.next();
+				SortedSet<Pair> sub = rangeTree.subSet(here, new Pair(here.x,here.y+d,0));
+				Iterator<Pair> iterB = sub.iterator();
+				while(iterB.hasNext()) {
+					Pair there = iterB.next();
+					if(here.id == there.id) continue;
+					ret = Min(ret,GetDist(here, there));
+				}
+			}
+			return ret;
 		}
-		
 	}
+	static public int GetDist(Pair a,Pair b) {
+		return (b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y);
+	}
+	
 	static class Pair implements Comparable<Pair>{
-		public int x,y;
-
-		public Pair(int a, int b) {
-			super();
-			this.x = a;
-			this.y = b;
+		public int x,y,id;
+		public Pair(int x, int y, int id) {
+			this.x = x;
+			this.y = y;
+			this.id = id;
 		}
-
 		@Override
 		public int compareTo(Pair o) {
-			if(this.y == o.y) {
-				if(this.x == o.x) return 0;
-				else return (this.x < o.x) ? -1:1;
+			if(this.x == o.x) {
+				if(this.y == o.y) return 1;
+				else return (this.y < o.y) ? -1:1;
 			}
-			else return (this.y < o.y) ? -1:1;
+			else return (this.x < o.x) ? -1:1;
 		}
-
-
-		
 	}
+
+	static class Y_Comparator implements Comparator<Pair> {
+		@Override
+		public int compare(Pair o1, Pair o2) {
+			if(o1.y == o2.y) return (o1.id < o2.id) ? -1:1; 
+			else return (o1.y < o2.y) ? -1:1;
+		}
+	}
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
 	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
@@ -127,6 +139,12 @@ public class Main {
 	static int Max(int a, int b) {
 		return (a > b) ? a : b;
 	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
 	static void Display(int[] arr, int limit) {
 		// System.out.println("요소갯수 : " + arr.length);
 		for (int i = 0; i < limit; i++)
@@ -136,9 +154,8 @@ public class Main {
 	static void Display(int[][] arr, int limit) {
 		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
 		for (int i = 0; i < limit; i++) {
-			System.out.print("[" + i + "] : ");
-			for (int j = 0; j < arr[0].length; j++) {
-				System.out.print(arr[i][j] + " ");
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
 			}
 			System.out.println();
 		}
