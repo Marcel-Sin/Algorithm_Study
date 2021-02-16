@@ -1,53 +1,88 @@
-import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
-
 
 public class Main {
-	static long swapCounter = 0;
-	static int[] sorted = new int[500000];
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100001;
+	
+	static int W,M,K;
+	
 	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		int man = nextInt(stk), woman = nextInt(stk),require = nextInt(stk);
-		int team = 0;
-		while (true) {
-			if(man >= 2 && woman >= 1 && (man+woman)-3 >= require) {
-				man -= 2;
-				woman -= 1;
-				team++;
-			}
-			else break;
-		}
-		System.out.println(team);
+		Init();
+		System.out.println(Solve());
 	}
 	
-	
-
-	
-	
-
+	static void Init() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		W = nextInt(stk);
+		M = nextInt(stk);
+		K = nextInt(stk);
+		
+	}
+	static int Solve() throws IOException{
+		int ans = 0;
+		int maxTeam = Min(W/2,M);
+		for (int i = maxTeam; i >= 0; i--) {
+			int restStudents = W+M-i*3;
+			if (restStudents >= K) {ans = i; break; }
+		}
+		return ans;
+	}
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
