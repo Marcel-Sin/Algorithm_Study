@@ -1,4 +1,3 @@
-import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -6,74 +5,108 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
-
 
 public class Main {
-	static long swapCounter = 0;
-	static int[] sorted = new int[500000];
+	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100001;
+
+	static int N;
+	static char[] problem;
+	static char[] memory = new char[MAX];
+	
 	public static void main(String[] args) throws IOException {
-		IO_Manager io = new IO_Manager();
-		String str = io.inputStr();
-		char[] chars = str.toCharArray();
-		int sum = 0;
-		boolean zeroCheck = false;
-		for(int i = 0; i < chars.length; i++) {
-			int c = chars[i]-48;
-			if(c == 0) zeroCheck = true;
-			sum += c;
+		Init();
+		Solve();
+	}
+	
+	static void Init() throws IOException{
+		int data = 0;
+		int i = 0;
+		problem = io.inputStr().toCharArray();
+		N = problem.length;
+	}
+	static void Solve() throws IOException{
+		Char_MergeSort_Reverse(problem,0,N-1);
+		int ac = 0;
+		boolean check = false;
+		for (int i = 0; i < N; i++) {
+			ac += problem[i] - '0';
+			if(problem[i] == '0') {check = true; break; }
 		}
-		if (sum % 3 == 0 && zeroCheck == true) {
-			MergeSort(chars,0,chars.length-1,new char[chars.length]);
-			StringBuilder sb = new StringBuilder(new String(chars));
-			io.write(sb.toString());
-		}
+		if(ac%3 == 0 && check) System.out.println(new String(problem));
 		else System.out.println(-1);
-		io.close();
 	}
-	
-	static void MergeSort(char[] arr, int start, int end, char[] temp) {
-		//Base Condition
-		if(start >= end) return;
+	//자바 래퍼클래스의 오토 박싱으로 느려짐. 직접 원시타입용 구현해야 ...
+	static void Char_MergeSort_Reverse(char[] arr,int low, int high) {
+		if(high <= low) return;
 		
-		//Divide
-		int mid = (start+end)/2;
+		int mid = (low+high)/2;
+		Char_MergeSort_Reverse(arr,low,mid);
+		Char_MergeSort_Reverse(arr,mid+1,high);
 		
-		//Conquer
-		MergeSort(arr,start,mid,temp);
-		MergeSort(arr,mid+1,end,temp);
-		
-		
-		//Combine
-		int i = start, j = mid+1;
-		for(int k = start; k <= end; k++) {
-			if(i > mid) temp[k] = arr[j++];
-			else if(j > end) temp[k] = arr[i++];
-			else if(arr[i] > arr[j]) temp[k] = arr[i++];
-			else temp[k] = arr[j++];
+		int l = low, h = mid+1;
+		for (int k = low; k <= high; k++) {
+			if(mid < l) memory[k] = arr[h++];
+			else if(high < h) memory[k] = arr[l++];
+			else if( arr[l] > arr[h]) memory[k] = arr[l++];
+			else memory[k] = arr[h++];
 		}
 		
-		//Copy
-		for(int x = start; x <= end; x++) arr[x] = temp[x];
+		for (int i = low; i <= high; i++) problem[i] = memory[i];
 	}
 	
-	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
-
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
