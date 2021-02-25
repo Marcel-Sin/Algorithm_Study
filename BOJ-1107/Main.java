@@ -3,76 +3,125 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.Vector;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int min = 9999999;
-	static Vector<Integer> button= new Vector<Integer>();
-	static boolean zeroPossible = true;
-	static int target;
-	static int current = 100;
-	static int memory;
+	static final int NINF = Integer.MIN_VALUE/2;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 500001;
+	static final int CURRENT_CHANNEL = 100;
+	
+	
+	static int N,numberSize,minPress;
+	static ArrayList<Integer> number = new ArrayList<Integer>();
+	static boolean[] check = new boolean[MAX*2];
 	public static void main(String[] args) throws IOException {
-		for(int i = 0; i < 10; i++) button.add(i);
-		target = Integer.parseInt(io.inputStr().trim());
-		int breakdown = Integer.parseInt(new String(io.inputStr().trim()));
-		if(breakdown > 0) {
-			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			for (int x = 0; x < breakdown; x++) {
-				int data = nextInt(stk);
-				for (int i = 0; i < button.size(); i++) {
-					if (button.get(i) == data) {
-						button.remove(i);
-						break;
-					}
-				}
-			}
-		}
-		//Input end
-		//Number+(+,-)   vs    only (+,-)
-		int normal_count = Math.abs(target-current);
-		int base = normal_count+100;
-		int low = (target-base < 0)? 0:target-base;
-		int high = target+base;
-		if(breakdown != 10) {
-			for(int i = low; i <= high; i++) CanMove(i);
-		}
-		System.out.println(Math.min(min, normal_count));
-		
-	}	
-
-
-	static void CanMove(int channel) {
-		int n=0, count=0,ch = channel;
-		while(ch != 0) {
-			count++;
-			n = ch % 10;
-			if(button.contains(n) == false) return;
-			ch /= 10;
-		}
-		if(channel == 0 && button.contains(0)) count++;
-		else if(channel == 0) return;
-		n = count+Math.abs(target-channel);
-		if(min > n) min = n;
-		
+		Init();
+		System.out.println(Solve());
 	}
 	
+	static void Init() throws IOException{
+		N = io.inputInt();
+		int k = io.inputInt();
+		boolean[] notpossible = new boolean[10];
+		if( k != 0) {
+			StringTokenizer stk = new StringTokenizer(io.inputStr());
+			for (int i = 0; i < k; i++) notpossible[nextInt(stk)] = true;
+		}
+		for (int i = 0; i < 10; i++) if (!notpossible[i]) number.add(i);
+		
+		number.sort((a, b) -> {
+			if(a == b) return 0; 
+			else return (a < b) ? 1:-1; 
+		});
+		numberSize = number.size();
+	}
+
+	
+	/*
+	 * [해결 전략]
+	 * 1) 현재 채널에서 +-로만으로 이동한다. (오직 1가지)
+	 * 2) 채널 버튼을 누르고 +-로 이동한다.
+	 * 
+	 * 채널 버튼을 누르고(조합) 이동하는 것은 모든 경우를 조사한다. - DFS 이용
+	 * <특이사항> 버튼이 0만 주어지는 경우, 0 ~ 49까지의 채널은 0+ 이동하면 유리하다.
+	 */
+	static int Solve() throws IOException {
+		minPress = Math.abs(N-CURRENT_CHANNEL);
+		for (int i = 0; i < numberSize; i++) {
+			DFS(number.get(i),1);
+		}
+		return minPress;
+	}
+	
+	static void DFS(int here, int buttonPress) {
+		check[here] = true;
+		// Min갱신
+		minPress = Min(minPress,buttonPress+Math.abs(here-N));
+		
+		if(here == 0) return;
+		for (int i = 0; i < numberSize; i++) {
+			int next = Concat_Number(here,number.get(i));
+			if(buttonPress < 6 && check[next] == false) DFS(next,buttonPress+1);
+		}
+	}
+	
+	static int Concat_Number(int origin, int target) {
+		origin *= 10;
+		return origin+target;
+	}
+	
+	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-
-
-	
-	
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
