@@ -3,46 +3,55 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int NINF = Integer.MIN_VALUE / 4;
-	static final int INF = Integer.MAX_VALUE / 4;
-	static final int MAX_SIZE = 12;
-
-	static int N,TOTAL;
-	static int[] DP = new int[MAX_SIZE];
-
-	public static void main(String[] args) throws IOException {
-		
-		Arrays.fill(DP, -1);
-		TOTAL = io.inputInt();
-		for (int i = 0; i < TOTAL; i++) {
+	static final int NINF = Integer.MIN_VALUE/2;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 531442; //3의 10승가지
+	
+	static int N,ans,test;
+	static boolean[] visited = new boolean[MAX];
+	
+	public static void main(String[] args) throws IOException{
+		test = io.inputInt();
+		for (int i = 0; i < test; i++) {
 			Init();
-			System.out.println(Solve(N));
+			System.out.println(Solve());
 		}
+
+	}
+	
+	static void Init() throws IOException{
+		N = io.inputInt();
 	}
 
-	static void Init() throws IOException {
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		N = nextInt(stk);
-		DP[0] = INF;
-		DP[1] = 1;
-		DP[2] = 2;
-		DP[3] = 4;
+	static int Solve() throws IOException {
+		ans = 0;
+		DFS(0);
+		return ans;
 	}
-	static int Solve(int n) throws IOException {
-		if(DP[n] != -1) return DP[n];
-		DP[n] = Solve(n-1)+Solve(n-2)+Solve(n-3);
-		return DP[n];
+	
+	static void DFS(int here) {
+		if(here == N) { ans++;  return; }
+		if(here < N) {
+			for (int i = 1; i <= 3; i++) DFS(here+i);
+		}
+		
 	}
 
+
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
 	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
@@ -58,6 +67,12 @@ public class Main {
 	static int Max(int a, int b) {
 		return (a > b) ? a : b;
 	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
 	static void Display(int[] arr, int limit) {
 		// System.out.println("요소갯수 : " + arr.length);
 		for (int i = 0; i < limit; i++)
@@ -67,9 +82,8 @@ public class Main {
 	static void Display(int[][] arr, int limit) {
 		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
 		for (int i = 0; i < limit; i++) {
-			System.out.print("[" + i + "] : ");
-			for (int j = 0; j < arr[0].length; j++) {
-				System.out.print(arr[i][j] + " ");
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
 			}
 			System.out.println();
 		}
