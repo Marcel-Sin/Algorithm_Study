@@ -3,107 +3,111 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE/2;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 531442; //3의 10승가지
+	
+	static int N,ans;
 	static int[] arr;
-	static int ans = 0;
-	static int caseCount = 0;
-	static Queue<Integer> Q = new LinkedList<Integer>();
-	public static void main(String[] args) throws IOException {
-		caseCount = io.inputInt();
-		arr = new int[caseCount];
-		int[] order = new int[caseCount];
+	public static void main(String[] args) throws IOException{
+		Init();
+		System.out.println(Solve());
+	}
+	
+	static void Init() throws IOException{
+		N = io.inputInt();
+		arr = new int[N];
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		for(int i = 0 ; i < caseCount; i++) {
-			arr[i] = nextInt(stk);
-			order[i] = i;
-		}
+		for (int i = 0; i < N; i++) arr[i] = nextInt(stk);	
 		
-		while(true) {
-			Sum(order);
-			if(Next_Permutation(order) == false) break;
-		}
-		System.out.println(ans);
-	}	
+	}
 
-	static boolean Next_Permutation(int[] a) {
-		if(a.length < 2) return false;
-		int len = a.length;
-		int ii,i = len-1,j = len;
-		
-		while(true) {
-			ii = i;
-			i--;
-			if(a[i] < a[ii]) {
-				while(a[i] >= a[--j]);
-				Swap(a,i,j);
-				PartialReverse(a, ii, len-1);
-				return true;
-			}
-			if(i == 0) return false;
-		}
+	static int Solve() throws IOException {
+		ans = NINF;
+		DFS(0,true);
+		return ans;
 	}
-	static boolean Prev_Permutation(int[] a) {
-		if(a.length < 2) return false;
-		int len = a.length;
-		int ii,i = len-1,j = len;
-		
-		while(true) {
-			ii = i;
-			i--;
-			if(a[i] >= a[ii]) {
-				while(a[i] < a[--j]);
-				Swap(a,i,j);
-				PartialReverse(a, ii, len-1);
-				return true;
+	
+	static void DFS(int here, boolean changed) {
+		// 이전에 변화가 있었니?
+		if(changed == true) ans = Max(Array_Dif_Sum(),ans);
+		for (int i = here; i < N; i++) { 
+			// 바꿔본다
+			if(here != i) {
+				Swap(here,i);
+				DFS(here+1,true);
+				Swap(here,i);
 			}
-			if(i == 0) return false;
+			// 바꿔보지 않고 넘어가본다.
+			else DFS(here+1,false);
 		}
 	}
 	
-	static void Sum(int[] p) {
-		int result = 0;
-		
-		for(int i = 0; i < caseCount-1; i++) {
-			result += Math.abs(arr[p[i]] - arr[p[i+1]]);
-		}
-		if(result > ans) ans = result;
-		
+	static int Array_Dif_Sum() {
+		int ret = 0;
+		// (0,1) (2,3) (N = 4)    (0,1) (2) (N = 3)
+		for (int i = 0; i < N-1; i++) ret += Math.abs(arr[i] - arr[i+1]);
+		return ret;
+	}
+	private static int Swaper;
+	static void Swap(int i, int j) {
+		Swaper = arr[i];
+		arr[i] = arr[j];
+		arr[j] = Swaper;
 	}
 	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
