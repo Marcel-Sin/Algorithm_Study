@@ -3,94 +3,106 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
-
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int A,B,ANSWER;
-	static boolean[] check = new boolean[100001];
-	public static void main(String[] args) throws IOException {
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		A = nextInt(stk);
-		B = nextInt(stk);
-		ANSWER = Math.abs(B-A);
-		BFS();
-		System.out.println(ANSWER);
-	}	
-
+	static final int NINF = Integer.MIN_VALUE/2;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100001;
 	
-	static void BFS() {
-		Queue<Finder> queue = new LinkedList<Finder>();
-		check[A] = true;
-		queue.add(new Finder(A,0));
-		while(queue.isEmpty() == false) {
-			Finder parent = queue.poll();
-			if(parent.count > ANSWER) continue;
-			if(parent.value == B) {
-				if(parent.count < ANSWER) {
-					ANSWER = parent.count;
+	static int N,K;
+	static int[] visited = new int[MAX];
+	public static void main(String[] args) throws IOException{
+		Init();
+		System.out.println(Solve());
+	}
+	
+	static void Init() throws IOException{
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		K = nextInt(stk);
+		Arrays.fill(visited, -1);
+	}
+
+	static int Solve() throws IOException {
+		Queue<Integer> queue = new LinkedList<Integer>();
+		queue.add(N);
+		visited[N] = 0;
+		int sec = 0;
+		int nextPos[] = new int[3];
+		while(!queue.isEmpty() && visited[K] == -1) {
+			int loopSize = queue.size();
+			sec++;
+			for (int i = 0; i < loopSize; i++) {
+				int curPos = queue.poll();
+				nextPos[0] = curPos-1;
+				nextPos[1] = curPos+1;
+				nextPos[2] = curPos*2;
+				for (int j = 0; j < 3; j++) {
+					if(0 <= nextPos[j] && nextPos[j] <= 100000 && visited[nextPos[j]] == -1) {
+						queue.add(nextPos[j]);
+						visited[nextPos[j]] = sec;
+					}
 				}
 			}
-			int next01 = parent.value*2;
-			int next02 = parent.value+1;
-			int next03 = parent.value-1;
-			int nextCount = parent.count+1;
-			if( next01 <= 100000 && check[next01] == false) {
-				check[next01] = true;
-				queue.add(new Finder(next01,nextCount));
-			}
-			if( next02 <= 100000 && check[next02] == false) {
-				check[next02] = true;
-				queue.add(new Finder(next02,nextCount));
-			}
-			if( next03 >= 0 && check[next03] == false) {
-				check[next03] = true;
-				queue.add(new Finder(next03,nextCount));
-			}
-			
 		}
-	}
-	
-
-	static class Finder{
-		int value;
-		int count;
-		public Finder(int value, int count) {
-			super();
-			this.value = value;
-			this.count = count;
-		}
+		return visited[K];
 	}
 	
 	
 	
-	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
