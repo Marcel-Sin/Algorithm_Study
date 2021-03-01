@@ -3,103 +3,118 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int ans = Integer.MAX_VALUE;
-	static int count;
-	static int[][] map;
-	public static void main(String[] args) throws IOException {
-		count = io.inputInt();
-		StringTokenizer stk;
-		map = new int[count][count];
-		for(int i = 0; i < count; i++) {
-			stk = new StringTokenizer(io.inputStr());
-			for(int j = 0; j < count; j++) map[i][j] = nextInt(stk);
-		}
-		boolean[] newVisit = new boolean[count];
-		for(int i = 0; i < count; i++) {
-			boolean[] temp = new boolean[count];
-			temp[i] = true;
-			Salesman newMan = new Salesman(0,0,i,i,temp);
-			DFS(newMan);
-		}
-
-		System.out.println(ans);
-	}	
-
-
+	static final int NINF = Integer.MIN_VALUE/2;
+	static final int INF = Integer.MAX_VALUE/2;
+	static final int MAX = 100000, START = 1, VISITED = 2;
 	
-	static void DFS(Salesman man) {
-		if(man.visitCount == count-1) {
-			if(map[man.where][man.start] == 0) return;
-			man.moveDist += map[man.where][man.start];
-			if(man.moveDist < ans) ans = man.moveDist;
-			return;
-		}
-		boolean[] check = man.visit;
-		for(int i = 0; i < count; i++) {
-			if(check[i] == false && map[man.where][i] != 0) {
-				boolean[] newVisit = check.clone();
-				newVisit[i] = true;
-				Salesman newMan = new Salesman(man.moveDist+map[man.where][i],man.visitCount+1, man.start, i, newVisit);
-				DFS(newMan);
+	
+	static int N,ans;
+	static int[][] map;
+	static int[] visited;
+	
+	public static void main(String[] args) throws IOException{
+		Init();
+		System.out.println(Solve());
+	}
+	
+	static void Init() throws IOException{
+		N = io.inputInt();
+		map = new int[N][N];
+		visited = new int[N];
+		for (int i = 0; i < N; i++) {
+			StringTokenizer stk = new StringTokenizer(io.inputStr());
+			for (int j = 0; j < N; j++) {
+				map[i][j] = nextInt(stk);
 			}
 		}
 	}
-	
-	static class Salesman {
-		int moveDist;
-		int visitCount;
-		int start;
-		int where;
-		boolean[] visit;
-		public Salesman(int moveDist, int visitCount, int start, int where, boolean[] visit) {
-			super();
-			this.moveDist = moveDist;
-			this.visitCount = visitCount;
-			this.start = start;
-			this.where = where;
-			this.visit = visit;
-		}
 
-
-
-		
+	static int Solve() throws IOException {
+		ans = INF;
+		DFS(0,0,0);
+		return ans;
 	}
 	
+	static void DFS(int here,int dist,int visitCount) {
+		// 출발지
+		if(visitCount == 0) {
+			for (int i = 0; i < N; i++) {
+				
+				visited[i] = START;
+				DFS(i,0,1);
+				visited[i] = 0;
+			}
+		}
+		// 아직 다 방문 못함.
+		else if (visitCount < N) {
+			for (int there = 0; there < N; there++) {
+				if(visited[there] == 0 && map[here][there] != 0) {
+					visited[there] = VISITED;
+					DFS(there,dist+map[here][there],visitCount+1);
+					visited[there] = 0;
+				}
+			}
+		}
+		//다 방문 했음.
+		else {
+			int startDist = INF;
+			for (int i = 0; i < N; i++) if(visited[i] == START && map[here][i] != 0) {startDist = map[here][i]; break;} 
+			ans = Min(ans,dist+startDist);
+		}
+	}
 	
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ============================================================
+	// ===================== functions for PS =====================
+	// ============================================================
+	// ============================================================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ",arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
