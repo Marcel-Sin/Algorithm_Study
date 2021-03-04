@@ -3,131 +3,164 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
-
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static char[] check = new char[10000];
-	static int[] trace = new int[10000];
-	static int A,target;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+	static final int PROBLEM_MAX = 10000;
+	
+	static int N, M, TEST;
+	static int[] rr_Result = new int[PROBLEM_MAX];
+	static int[] lr_Result = new int[PROBLEM_MAX];
+	
+	// 방문체크 및 재귀 스트링 형성
+	static Pair[] visited_Pair = new Pair[PROBLEM_MAX];
+	static StringBuilder sb; 
+	
+	static Queue<Integer> queue = new LinkedList<Integer>();
+	
 	public static void main(String[] args) throws IOException {
-		int total = io.inputInt();
-		
-		for(int i = 0 ; i < total; i++) {
-			Arrays.fill(check, (char)0);
-			Arrays.fill(trace, -1);
-			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			A = nextInt(stk);
-			target = nextInt(stk);
-			BFS(A);
-			Print(target);
-			io.bw.flush();
-			System.out.println();
+		Before_Init();
+		TEST = io.inputInt();
+		for (int i = 0; i < TEST; i++) {
+			Init();
+			Solve();
 		}
-		
-		
-	
-	}	
-	
-	static int Double(int number) {
-		return (number*2)%10000;
-	}	
-	static int Sub(int number) {
-		return (number-1 < 0)? 9999:number-1;
 	}
-	static int Left(int number) {
-		int MLN = number/1000;
-		number *= 10;
-		number %= 10000;
-		number += MLN;
-		return number;
+	static void Before_Init() throws IOException {
+		for (int i = 0; i < PROBLEM_MAX; i++) {
+			rr_Result[i] = Right_Rotate_Decimal(i);
+			lr_Result[i] = Left_Rotate_Decimal(i);
+		}
+		for (int i = 0; i < PROBLEM_MAX; i++) visited_Pair[i] = new Pair(0,'0');
 	}
-	static int Right(int number) {
-		int MRN = (number%10)*1000;
-		number /= 10;
-		number += MRN;
-		return number;
+	static void Init() throws IOException {
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		N = nextInt(stk);
+		M = nextInt(stk);
+		for (int i = 0; i < PROBLEM_MAX; i++) visited_Pair[i].parent = -1;
 	}
-	
 
+	static int carry, rest;
+	static int Right_Rotate_Decimal(int value) {
+		// ABCD
+		// (1) D를 가져온다.
+		carry = value % 10;
+		// (2) ABC를 가져온다.
+		rest = value / 10;
+		// 결과 : DABC
+		return carry * 1000 + rest;
+	}
+	static int Left_Rotate_Decimal(int value) {
+		// ABCD
+		// (1) A를 가져온다.
+		carry = value / 1000;
+		// (2) BCD를 가져온다.
+		rest = value % 1000;
+		// 결과 : BCDA
+		return rest * 10 + carry;
+	}
+	static void Recursive_String(int idx) {
+		if(visited_Pair[idx].parent != idx) {
+			Recursive_String(visited_Pair[idx].parent);
+			sb.append(visited_Pair[idx].c);
+		}
+	}
 	
-	static void BFS(int start) {
-		Queue<Integer> queue = new LinkedList<Integer>();
-		check[start] = 0;
-		trace[start] = start;
-		queue.add(start);
+	static void Solve() throws IOException {
+		queue.clear();
+		visited_Pair[N].parent = N;
+		queue.add(N);
+		int[] nextNumber = new int[4];
 		
-		while(queue.isEmpty() == false) {
-			int parent = queue.poll();
-			if(parent == target) {
-				break;
+		while(!queue.isEmpty()) {
+			int here = queue.poll();
+			if(here == M) break;
+			nextNumber[0] = (here*2)%10000;
+			nextNumber[1] = (here-1+10000)%10000;
+			nextNumber[2] = rr_Result[here];
+			nextNumber[3] = lr_Result[here];
+			for (int i = 0; i < 4; i++) {
+				if(visited_Pair[nextNumber[i]].parent == -1) {
+					visited_Pair[nextNumber[i]].parent = here;
+					switch(i) {
+						case 0 : 
+							visited_Pair[nextNumber[i]].c = 'D';
+							break;
+						case 1 : 
+							visited_Pair[nextNumber[i]].c = 'S';
+							break;
+						case 2 : 
+							visited_Pair[nextNumber[i]].c = 'R';
+							break;
+						case 3 : 
+							visited_Pair[nextNumber[i]].c = 'L';
+							break;
+					}
+					queue.add(nextNumber[i]);
+				}
 			}
-			int n1 = Double(parent);
-			int n2 = Sub(parent);
-			int n3 = Left(parent);
-			int n4 = Right(parent);
-			if(trace[n1] == -1) {
-				check[n1] = 'D';
-				trace[n1] = parent;
-				queue.add(n1);
-			}
-			if(trace[n2] == -1) {
-				check[n2] = 'S';
-				trace[n2] = parent;
-				queue.add(n2);
-			}
-			if(trace[n3] == -1) {
-				check[n3] = 'L';
-				trace[n3] = parent;
-				queue.add(n3);
-			}
-			if(trace[n4] == -1) {
-				check[n4] = 'R';
-				trace[n4] = parent;
-				queue.add(n4);
-			}
-			
-			
 		}
+		sb = new StringBuilder();
+		Recursive_String(M);
+		System.out.println(sb.toString());
 	}
 	
-	
-	static void Print(int number) throws IOException{
-		if(number != trace[number]) {
-			Print(trace[number]);
-			io.bw.write(check[number]);
+	static class Pair {
+		public int parent;
+		public char c;
+		public Pair(int parent, char c) {
+			super();
+			this.parent = parent;
+			this.c = c;
 		}
 	}
-	
-	
+//	===================== ETC functions for PS =====================
+//	===================== ETC functions for PS =====================
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		// System.out.println("요소갯수 : " + arr.length);
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ", arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
-
-
-
-
-
 
 // ************************************** //
 // *-------------IO_Manager--------------* //
