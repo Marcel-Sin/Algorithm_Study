@@ -3,121 +3,162 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Vector;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int A = 0, B = 1, C = 2;
-	static int[] FULL = new int[3];
-	static boolean[][][] check;
-	static SortedSet<Integer> answer = new TreeSet<Integer>();
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+	static final int PROBLEM_MAX = 201;
+	
+	static int problem;
+	static WaterCup[] cup = new WaterCup[3];
+	static Queue<Integer> queue = new LinkedList<Integer>();
+	static HashMap<Integer, Boolean> visited = new HashMap<Integer, Boolean>();
+	static TreeSet<Integer> ansList = new TreeSet<Integer>();
+	
 	public static void main(String[] args) throws IOException {
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		FULL[0] = nextInt(stk);
-		FULL[1] = nextInt(stk);
-		FULL[2] = nextInt(stk);
-		check = new boolean[201][201][201];
-		Bottle tempBottle = new Bottle(0, 0, FULL[2]);
-		BFS(tempBottle);
-		for(int n : answer) System.out.print(n + " ");
-		
-		
-	}	
+		Init();
+		Solve();
+	}
 
-	static void BottleVisit(Bottle set) {
-		check[set.value[0]][set.value[1]][set.value[2]] = true;
-	}
-	
-	static boolean BottleCheck(Bottle set) {
-		if(check[set.value[0]][set.value[1]][set.value[2]] == false) return false;
-		return true;
-	}
-	
-	static void ExtractAnswer(Bottle set) {
-		if(set.value[0] == 0) answer.add(set.value[2]);
-	}
-	
-	
-	static void BFS(Bottle startSet) {
-		Queue<Bottle> queue = new LinkedList<Bottle>();
-		BottleVisit(startSet);
-		queue.add(startSet);
+	static void Init() throws IOException {
+		int[] arr = new int[3];
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		for (int i = 0; i < arr.length; i++) arr[i] = nextInt(stk);
 		
-		while(queue.isEmpty() == false) {
-			Bottle parent = queue.poll();
-			ExtractAnswer(parent);
-			Bottle[] nexts = new Bottle[6];
-			for(int i = 0; i < 6; i++) {
-				nexts[i] = new Bottle(parent.value[0],parent.value[1],parent.value[2]);
-			}
-			nexts[0].Pour(0,1);
-			nexts[1].Pour(0,2);
-			nexts[2].Pour(1,2);
-			nexts[3].Pour(1,0);
-			nexts[4].Pour(2,0);
-			nexts[5].Pour(2,1);
-			for(int i = 0; i < 6; i++) {
-				if(BottleCheck(nexts[i]) == false) {
-					BottleVisit(nexts[i]);
-					queue.add(nexts[i]);
+		problem = 0;
+		problem = SetWater(problem, 0, 0);
+		problem = SetWater(problem, 1, 0);
+		problem = SetWater(problem, 2, arr[2]);
+		
+		cup[0] = new WaterCup(0, arr[0]);
+		cup[1] = new WaterCup(0, arr[1]);
+		cup[2] = new WaterCup(arr[2], arr[2]);
+	}
+	private static int giveAbleAmount,nextData;
+	static void Solve() throws IOException {
+		queue.add(problem);
+		visited.put(problem, true);
+		
+		while(!queue.isEmpty()) {
+			int hereData = queue.poll();
+			cup[0].amount = GetWater(hereData, 0);
+			cup[1].amount = GetWater(hereData, 1);
+			cup[2].amount = GetWater(hereData, 2);
+			if(cup[0].amount == 0) ansList.add(cup[2].amount);
+			for (int selecter = 0; selecter < cup.length; selecter++) {
+				for (int to = 0; to < cup.length; to++) {
+					if(selecter == to) continue;
+					giveAbleAmount = cup[selecter].GiveAmount(cup[to]);
+					cup[selecter].MinusAmount(giveAbleAmount);
+					cup[to].PlusAmount(giveAbleAmount);
+					nextData = SetWaterData(cup[0], cup[1], cup[2]);
+					if(visited.containsKey(nextData) == false) {
+						visited.put(nextData, true);
+						queue.add(nextData);
+					}
+					cup[selecter].PlusAmount(giveAbleAmount);
+					cup[to].MinusAmount(giveAbleAmount);
 				}
 			}
-			
 		}
-		
-		
+		Iterator<Integer> iter = ansList.iterator();
+		while(iter.hasNext()) System.out.print(iter.next()+" ");
 	}
 	
-	static class Bottle {
-		int[] value;
-		public Bottle(int a, int b, int c) {
-			value = new int[3];
-			value[0] = a;
-			value[1] = b;
-			value[2] = c;
+	private static int temp;
+	static int GetWater(int data,int pos) {		
+		pos = (2-pos)*10;
+		temp = 0b1111111111 << pos;
+		temp = data & temp;
+		temp = temp >> pos;
+		return temp;
+	}
+	static int SetWater(int data,int pos,int value) {		
+		pos = (2-pos)*10;
+		temp = 0b1111111111 << pos;
+		temp = ~temp;
+		temp = data & temp;
+		value = value << pos;
+		return temp | value;
+	}
+	static int SetWaterData(WaterCup a,WaterCup b,WaterCup c) {		
+		int ret = 0;
+		ret = SetWater(ret, 0, a.amount);
+		ret = SetWater(ret, 1, b.amount);
+		ret = SetWater(ret, 2, c.amount);
+		return ret;
+	}
+	
+	static class WaterCup {
+		public int amount,volume;
+		public WaterCup(int amount, int volume) {
+			this.amount = amount;
+			this.volume = volume;
 		}
-		public void Pour(int from, int to) {
-			if(value[from] == 0) return;
-			int toRestSpace = FULL[to]-value[to];
-			value[to] += (toRestSpace >= value[from])? value[from]:toRestSpace;
-			value[from] = (toRestSpace >= value[from]) ? 0:value[from]-toRestSpace;
+		public int GiveAmount(WaterCup to) {
+			if(this.amount == 0) return 0;
+			int emptySpace = to.volume-to.amount;
+			int giveAmount = (emptySpace < this.amount) ? emptySpace:this.amount;
+			return giveAmount;
+		}
+		public void PlusAmount(int value) {
+			amount+=value;
+		}
+		public void MinusAmount(int value) {
+			amount-=value;
 		}
 	}
-
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ", arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
 
 
-
-
-
-
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
