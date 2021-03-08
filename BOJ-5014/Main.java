@@ -3,92 +3,107 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
-
+import java.util.TreeSet;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+	static final int PROBLEM_MAX = 1000001;
+	
 	static int F,S,G,U,D;
-	static int[] check;
+	static int[] caseArray = new int[2];
+	static int[] visited = new int[PROBLEM_MAX];
+	static Queue<Integer> queue = new LinkedList<Integer>();
+	
 	public static void main(String[] args) throws IOException {
-		Initializing();
-		BFS(S);
-		if(check[G] == -1) System.out.println("use the stairs");
-		else System.out.println(check[G]);
+		Init();
+		Solve();
 	}
-	
-	static void BFS(int start) {
-		Queue<Integer> queue = new LinkedList<Integer>();
-		check[start] = 0;
-		queue.add(start);
-		int queueSize = 0, parent = 0, counter = 1, n1,n2;
-		while(queue.isEmpty() == false) {
-			queueSize = queue.size();
-			for (int i = 0; i < queueSize; i++) {
-				parent = queue.poll();
-				if(parent == G) return;
-				
-				n1 = parent + U;
-				n2 = parent - D;
-				if(1 <= n1 && n1 <= F && check[n1] == -1) {
-					check[n1] = counter;
-					queue.add(n1);
-				}
-				if(1 <= n2 && n2 <= F && check[n2] == -1) {
-					check[n2] = counter;
-					queue.add(n2);
-				}
-			}
-			counter++;
-		}
-		
-		
-		
-		
-	}
-	
-	static void Initializing() throws IOException{
+
+	static void Init() throws IOException {
+		Arrays.fill(visited, -1);
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		F = nextInt(stk);
 		S = nextInt(stk);
 		G = nextInt(stk);
-		U = nextInt(stk);
-		D = nextInt(stk);
-		check = new int[1000001];
-		Arrays.fill(check, -1);
+		caseArray[0] = nextInt(stk);
+		caseArray[1] = nextInt(stk)*-1;
 	}
+
+	static void Solve() throws IOException {
+		queue.add(S);
+		visited[S] = 0;
+		while(!queue.isEmpty()) {
+			int here = queue.poll();
+			if(here == G) break;
+			int next;
+			for (int i = 0; i < caseArray.length; i++) {
+				next = here+caseArray[i];
+				if(1 <= next && next <= F && visited[next] == -1) {
+					visited[next] = visited[here] + 1;
+					queue.add(next);
+				}
+			}
+		}
+		if(visited[G] == -1) System.out.println("use the stairs");
+		else System.out.println(visited[G]);
+	}
+
 	
 	
+	
+	
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ", arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
 
 
-
-
-
-
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
