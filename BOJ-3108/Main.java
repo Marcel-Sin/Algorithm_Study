@@ -3,96 +3,140 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
-
+import java.util.TreeSet;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int[][] MAP = new int[2001][2001];
-	static int ANS = 0;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+	static final int PROBLEM_MAX = 2001;
+	static final int NO_PATH = -1, PATH = 0, VISITED = 1;
+	
+	static int N;
+	static int[][] checkMap = new int[PROBLEM_MAX][PROBLEM_MAX];
+	static ArrayList<Pair> startList = new ArrayList<Main.Pair>();
+	
 	public static void main(String[] args) throws IOException {
-		Initializing();
-		if(MAP[1000][1000] == 1) {
-			DFS(1000,1000);
+		Init();
+		System.out.println(Solve());
+	}
+
+	static void Init() throws IOException {
+		N = io.inputInt();
+		for (int i = 0; i < checkMap.length; i++) Arrays.fill(checkMap[i], NO_PATH);	
+		//크기 범위는 -500~500 이므로 +500해버리면, 0~1000까지로 그 상태에서 좌표를 2배 한다.
+
+		
+		int arr[] = new int[4];
+		for (int i = 0; i < N; i++) {
+			StringTokenizer stk = new StringTokenizer(io.inputStr());
+			for (int j = 0; j < 4; j++) arr[j] = (nextInt(stk)+500)*2;
+			Write_Rect(arr);
+			startList.add(new Pair(arr[0],arr[1]));
 		}
-		for(int i = 0; i <= 2000; i++) {
-			for(int j = 0; j <= 2000; j++) {
-				if(MAP[i][j] == 1) {
-					DFS(i,j);
-					ANS++;
-				}
+	}
+
+	static int Solve() throws IOException {
+		int ret = 0;
+		if(checkMap[1000][1000] == PATH) DFS(1000,1000);
+		for (int i = 0; i < startList.size(); i++) {
+			Pair pair = startList.get(i);
+			if(checkMap[pair.a][pair.b] == PATH) {
+				ret++;
+				DFS(pair.a,pair.b);
 			}
 		}
-		System.out.println(ANS);
-	}	
+		return ret;
+	}
 	
-	static void DFS(int i, int j) {
-		MAP[i][j] = 2;
-		if(i-1 >= 0 && MAP[i-1][j] == 1) DFS(i-1,j);
-		if(i+1 <= 2000 && MAP[i+1][j] == 1) DFS(i+1,j);
-		if(j-1 >= 0 && MAP[i][j-1] == 1) DFS(i,j-1);
-		if(j+1 <= 2000 && MAP[i][j+1] == 1) DFS(i,j+1);
-	}
-
-
-	static void RectCreate(int...args) {
-		for(int i = 0 ; i < args.length; i++) {
-			if(args[i] < 0) args[i] = args[i]*2+1000;
-			else args[i] = args[i]*2+1000;
-			
+	static void Write_Rect(int[] arr) {
+		// 세로 만들기
+		for (int i = arr[1]; i <= arr[3]; i++) {
+			checkMap[arr[0]][i] = PATH;
+			checkMap[arr[2]][i] = PATH;
 		}
-		
-		for(int y = args[1]; y <= args[3]; y++) {
-			MAP[y][args[0]] = 1;
-			MAP[y][args[2]] = 1;
-		}
-		for(int x = args[0]; x <= args[2]; x++) {
-			MAP[args[1]][x] = 1;
-			MAP[args[3]][x] = 1;
-		}
-		
-		
-	}
-
-	static void Initializing() throws IOException{
-		int caseCount = io.inputInt();
-		for(int i = 0 ; i < caseCount; i++) {
-			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			RectCreate(nextInt(stk),nextInt(stk),nextInt(stk),nextInt(stk));
+		// 가로 만들기
+		for (int i = arr[0]; i <= arr[2]; i++) {
+			checkMap[i][arr[1]] = PATH;
+			checkMap[i][arr[3]] = PATH;
 		}
 	}
 	
+	private static int[] dirR = {0,0,-1,1};
+	private static int[] dirC = {-1,1,0,0};
+	private static int nr,nc;
+	static void DFS(int r, int c) {
+		checkMap[r][c] = 1;
+		for (int i = 0; i < 4; i++) {
+			nr = r+dirR[i]; nc = c+dirC[i];
+			if(0 <= nr && nr < PROBLEM_MAX && 0 <= nc && nc < PROBLEM_MAX && checkMap[nr][nc] == PATH) {
+				DFS(nr,nc);
+			}
+		}
+	}
 	
+	static class Pair {
+		public int a,b;
+
+		public Pair(int a, int b) {
+			super();
+			this.a = a;
+			this.b = b;
+		}
+		
+	}
+	
+	
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ", arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
 
 
-
-
-
-
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
