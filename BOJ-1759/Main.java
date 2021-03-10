@@ -3,103 +3,116 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.StringTokenizer;
-
+import java.util.TreeSet;
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int LEN,SIZE;
-	static char[] A;
-	public static void main(String[] args) throws IOException {
-		Initializing();
-		State state = new State();
-		DFS(state,0);
-		io.close();
-	}
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+	static final int PROBLEM_MAX = 2001;
+
+	static int L,C;
+	static ArrayList<Character> clist = new ArrayList<Character>(); 
+	static char[] mem;
+	static StringBuilder sb = new StringBuilder();
 	
-	static boolean Initializing() throws IOException{
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		LEN = nextInt(stk);
-		SIZE = nextInt(stk);
-		A = new char[SIZE];
-		stk = new StringTokenizer(io.inputStr());
-		for(int i = 0; i < SIZE; i++) A[i] = stk.nextToken().charAt(0);
-		Arrays.sort(A);
-		return true;
-	}
-	static void DFS(State s,int curIdx) throws IOException{
-		if(s.sp == LEN) {
-			if(s.Condition()) {
-				io.write(s.toString());
-				io.bw.write('\n');
-			}
-			return;
-		}
-		
-		for(int i = curIdx; i < SIZE; i++) {
-			s.Select(i);
-			DFS(s,i+1);
-			s.sp--;
-		}
+	public static void main(String[] args) throws IOException {
+		Init();
+		Solve();
+		System.out.print(sb.toString());
 	}
 
-	static class State {
-		char[] storage;
-		int sp;
-		
-		public State() {
-			super();
-			this.storage = new char[LEN];
-			this.sp = 0;
-		}
-		
-		public boolean Condition() {
-			int vow=0,conso=0;
-			for(int i = 0; i < storage.length; i++) {
-				if(storage[i] == 'a' || storage[i] == 'e' || storage[i] == 'i' || storage[i] == 'o' || storage[i] == 'u') vow++;
-				else conso++;
-			}
-			if(vow >= 1 && conso >= 2) return true;
-			return false;
-		}
-		public void Select(int idx) {
-			storage[sp] = A[idx];
-			sp++;
-		}
-		public String toString() {
-			return new String(storage);
-		}
-		
+	static void Init() throws IOException {
+		StringTokenizer stk = new StringTokenizer(io.inputStr());
+		L = nextInt(stk); C = nextInt(stk);
+		mem = new char[L];
+		stk = new StringTokenizer(io.inputStr());
+		for (int i = 0; i < C; i++) clist.add(stk.nextToken().charAt(0));
+		Collections.sort(clist);
+	}
+
+	static void Solve() throws IOException {
+		DFS(-1,0,0,0);		
 	}
 	
+	private static char iterC;
+	static void DFS(int here, int vow, int conso, int len) throws IOException {
+		if(len == L) {
+				if( 1 <= vow && 2 <= conso) {
+					sb.append(new String(mem));
+					sb.append('\n');
+					return;
+				}
+				else return;
+		}
+		for (int i = here+1; i < C; i++) {
+			iterC = clist.get(i);
+			mem[len] = iterC;
+			if(Check_Vowel(iterC) == true) DFS(i,vow+1,conso,len+1);
+			else DFS(i,vow,conso+1,len+1);
+		}
+	}
+	
+	static boolean Check_Vowel(char c) {
+		switch(c) {
+			case 'a' : return true;
+			case 'e' : return true;
+			case 'i' : return true;
+			case 'o' : return true;
+			case 'u' : return true;
+		}
+		return false;
+	}
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
-		}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
 	}
-	
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		System.out.println("요소갯수 : " + (arr.length * arr[0].length));
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf("%2d ", arr[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
 }
 
 
-
-
-
-
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
