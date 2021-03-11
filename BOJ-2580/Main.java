@@ -5,198 +5,145 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int[][] MAP;
-	static int SIZE;
-	static boolean[][] isBox;
-	static boolean[][] isRow;
-	static boolean[][] isCol;
-	
-	static State state;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+
+	static int N;
+	static boolean interrupt;
+	static int[][] map = new int[9][9];
+	static ArrayList<Integer>[][] possible = new ArrayList[9][9];
+	static ArrayList<Pair> slotList = new ArrayList<Main.Pair>();
+
 	public static void main(String[] args) throws IOException {
-		Initializing();
-		DFS(state);
+		Init();
+		DFS(0);
 	}
 	
-	static boolean Initializing() throws IOException{
-		MAP = new int[9][9];
-		isRow = new boolean[9][];
-		isCol = new boolean[9][];
-		isBox = new boolean[9][];
-		
-		SIZE = 0;
-		ArrayList<Cord> cords = new ArrayList<Cord>(); 
-		for(int i = 0; i < 9; i++) {
+	static void Init() throws IOException {
+		for (int i = 0; i < 9; i++) {
 			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			for (int j = 0; j < 9; j++) { 
-				MAP[i][j] = nextInt(stk);
-				if(MAP[i][j] == 0) {
-					cords.add(new Cord(i,j));
-					SIZE++;
+			for (int j = 0; j < 9; j++) map[i][j] = nextInt(stk);
+		}
+		N = 0;
+		interrupt = false;
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				if(map[i][j] == 0) {
+					Possible_Check(i, j);
+					N++;
+					slotList.add(new Pair(i,j));
 				}
 			}
 		}
-		for(int x = 0; x < 9; x++) {
-			isBox[x] = new boolean[10];
-			isCol[x] = new boolean[10];
-			isRow[x] = new boolean[10];
-			Cord cur = BoxToCord(x);
-			for(int i = cur.row; i < cur.row+3; i++) {
-				for(int j = cur.col; j < cur.col+3; j++) {
-					isBox[x][MAP[i][j]] = true;
-				}
+		
+	}
+
+	@SuppressWarnings("unchecked")
+	static void Possible_Check(int r, int c) {
+		boolean[] arr = new boolean[10];
+		Arrays.fill(arr, true);
+		// Row 체크
+		for (int i = 0; i < 9; i++) arr[map[r][i]] = false;
+		// Col 체크
+		for (int i = 0; i < 9; i++) arr[map[i][c]] = false;
+		
+		// 9칸 파트 체크
+		int row = (r/3)*3, col = (c/3)*3;
+		for (int i = row; i < row+3; i++) {
+			for (int j = col; j < col+3; j++) {
+				arr[map[i][j]] = false;
 			}
-			for(int j = 0; j < 9; j++) isRow[x][MAP[x][j]] = true;
-			for(int i = 0; i < 9; i++) isCol[x][MAP[i][x]] = true;
 		}
+		possible[r][c] = new ArrayList<Integer>();
+		for (int i = 1; i <= 9; i++) if(arr[i]) possible[r][c].add(i);
 		
-		
-		Cord[] cordlist = new Cord[SIZE];
-		for(int i = 0; i < cords.size(); i++) {
-			cords.get(i).CreatePlist();
-			cordlist[i] = cords.get(i);
-		}
-		state = new State(cordlist,0);
-
-		return true;
-	}
-
-	static Cord BoxToCord(int boxNum) {
-		switch(boxNum) {
-			case 0:
-				return new Cord(0,0);
-			case 1:
-				return new Cord(0,3);
-			case 2:
-				return new Cord(0,6);
-			case 3:
-				return new Cord(3,0);
-			case 4:
-				return new Cord(3,3);
-			case 5:
-				return new Cord(3,6);
-			case 6:
-				return new Cord(6,0);
-			case 7:
-				return new Cord(6,3);
-			case 8:
-				return new Cord(6,6);
-		}
-		return null;
-	}
-	static int CordToBox(Cord boxCord) {
-		int r = (boxCord.row / 3)*3;
-		int c = boxCord.col / 3;
-		return r+c;
 	}
 	
-	static void DFS(State s) {
-		if(s.stopRecursion == true) return;
-		if(s.sp == SIZE) {
-			Display();
-			s.stopRecursion = true;
+	static void DFS(int slot) throws IOException {
+		if(interrupt == true) return;
+		if(slot == N) {
+			Display(map,9);
+			interrupt = true;
 			return;
 		}
-		Cord cur = s.GetCord();
-		for(int i = 0; i < cur.plist.size(); i++) {
-			if(cur.CheckPos(i)) {
-				s.Select(i);
-				DFS(s);
-				s.Deselect();
+		Pair here = slotList.get(slot);
+		for (int i = 0; i < possible[here.a][here.b].size(); i++) {
+			int nextInput = possible[here.a][here.b].get(i);
+			if( !interrupt && Check_Input(here.a,here.b,nextInput)) {
+				map[here.a][here.b] = nextInput;
+				DFS(slot+1);
+				map[here.a][here.b] = 0;
 			}
 		}
 	}
-	
-	static class State {
-		Cord[] storage;
-		int sp;
-		boolean stopRecursion;
+	static boolean Check_Input(int r,int c,int number) {
+		// Row 체크
+		for (int i = 0; i < 9; i++) if(map[r][i] == number) return false;
 		
-		public State(Cord[] storage, int sp) {
-			super();
-			this.storage = storage;
-			this.sp = sp;
-		}
+		// Col 체크
+		for (int i = 0; i < 9; i++) if(map[i][c] == number) return false;
 		
-		public Cord GetCord() {
-			return storage[sp];
+		// 9칸 파트 체크
+		int row = (r/3)*3, col = (c/3)*3;
+		for (int i = row; i < row+3; i++) {
+			for (int j = col; j < col+3; j++) {
+				if(map[i][j] == number) return false;
+			}
 		}
-		
-		public void Select(int idx) {
-			Cord cur = GetCord();
-			int N = cur.plist.get(idx);
-			MAP[cur.row][cur.col] = N;
-			isBox[cur.boxNum][N] = true;
-			isRow[cur.row][N] = true;
-			isCol[cur.col][N] = true;
-			sp++;
-		}
-		
-		public void Deselect() {
-			sp--;
-			Cord cur = GetCord();
-			int N = MAP[cur.row][cur.col];
-			isBox[cur.boxNum][N] = false;
-			isRow[cur.row][N] = false;
-			isCol[cur.col][N] = false;
-		}
+		return true;
 	}
 	
-	static class Cord{
-		public int row,col,boxNum;
-		public ArrayList<Integer> plist;
-		public Cord(int row, int col) {
-			super();
-			this.row = row;
-			this.col = col;
-			this.boxNum = CordToBox(this);
-			plist = new ArrayList<Integer>();
+	static class Pair {
+		public int a,b;
+		public Pair(int a, int b) {
+			this.a = a;
+			this.b = b;
 		}
-		public void CreatePlist() {
-			boolean[] check = isBox[boxNum].clone();
-			for(int n = 1; n <= 9; n++) if(isRow[row][n] == true) check[n] = true;
-			for(int n = 1; n <= 9; n++) if(isCol[col][n] == true) check[n] = true;
-			
-			// plist Creation
-			for(int i = 1; i <= 9; i++) {
-				if(check[i] == false) plist.add(i);
-			}
-			
-		}
-		public boolean CheckPos(int idx) {
-			int N = plist.get(idx);
-			if(isBox[boxNum][N] == true) return false;
-			if(isRow[row][N] == true) return false;
-			if(isCol[col][N] == true) return false;
-			return true;
-		}
-
 		
-	}  // MAIN END Point
-	
-	static void Display() {
-		for(int i = 0; i < 9; i++) {
-			for(int j = 0; j < 9; j++) {
-				System.out.print(MAP[i][j] + " ");
+	}
+//	===================== ETC functions for PS =====================
+	static int nextInt(StringTokenizer stk) {
+		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf(arr[i][j]+" ");
 			}
 			System.out.println();
 		}
 	}
-	
-	static int nextInt(StringTokenizer stk) {
-		return Integer.parseInt(stk.nextToken());
-	}
 }
 
 
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
