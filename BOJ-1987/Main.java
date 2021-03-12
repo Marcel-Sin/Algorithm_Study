@@ -13,8 +13,9 @@ public class Main {
 	static final int INF = Integer.MAX_VALUE / 2;
 
 	static int R,C,ans;
-	static char[][] map;
-	static boolean[] checked = new boolean[100]; 
+	static int[][] map;
+	static int[][] visited = new int[20][20]; 
+	
 	static int[] dirR = {0,0,-1,1};
 	static int[] dirC = {-1,1,0,0};
 	
@@ -26,35 +27,51 @@ public class Main {
 	static void Init() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		R = nextInt(stk); C = nextInt(stk);
-		map = new char[R][];	
-		for (int i = 0; i < R; i++) map[i] = io.inputStr().toCharArray();
-		ans = 0;
+		map = new int[R][C];	
+		for (int i = 0; i < R; i++) {
+			char[] arr = io.inputStr().toCharArray();
+			for (int j = 0; j < C; j++) {
+				map[i][j] = arr[j]-'A';
+				visited[i][j] = 0;
+			}
+		}
 	}
-	
 	static void Solve() throws IOException {
-		checked[map[0][0]] = true;
-		DFS(0,0,1);
+		ans = 0;
+		DFS(0,0,Set_Bit(0,map[0][0]),1);
 		System.out.println(ans);
 	}
 	
-	static void DFS(int r, int c,int counter) throws IOException {
-		checked[map[r][c]] = true;
+	static void DFS(int r, int c,int visit_Data,int counter) throws IOException {
+		visited[r][c] = visit_Data;
 		
 		ans = Max(ans,counter);
 		if(26 <= ans) return;
 		
-		int nr, nc;
+		int nr, nc, next_Data;
 		for (int i = 0; i < 4; i++) {
 			nr = r+dirR[i]; nc = c+dirC[i];
-			if(0 <= nr && nr < R && 0 <= nc && nc < C && is_Duplicated(nr, nc) == false) {
-				DFS(nr,nc,counter+1);
-				checked[map[nr][nc]] = false;
+			
+			if(0 <= nr && nr < R && 0 <= nc && nc < C) {
+				next_Data = Set_Bit(visit_Data, map[nr][nc]);
+				
+				// 방문 할 곳이 알파벳 중복되지 않고, 방문 할 곳이 이전과 다른 새로운 방식으로 찾은 길인가?
+				if( visit_Data != next_Data && visited[nr][nc] != next_Data) {
+					// 그러면 가볼만하다.
+					DFS(nr,nc,next_Data,counter+1);
+				}
 			}
 		}
 	}
-	
-	static boolean is_Duplicated(int i, int j) {
-		return checked[map[i][j]];
+	private static int temp;
+	static int Set_Bit(int originData ,int pos) {
+		temp = 1 << pos;
+		return originData | temp;
+	}
+	static int Unset_Bit(int originData ,int pos) {
+		temp = 1 << pos;
+		temp = ~temp;
+		return originData & temp;
 	}
 
 //	===================== ETC functions for PS =====================
