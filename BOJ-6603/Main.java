@@ -3,99 +3,99 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int LOTTO = 6;
-	static int[] A;
-	static int size;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+
+	static boolean testLoop;
+	static int N = 6,K;
+	static ArrayList<Integer> list = new ArrayList<Integer>();
+	static int[] output = new int[6];
+	static StringBuilder sb;
+	
 	public static void main(String[] args) throws IOException {
-		while(Initializing() == true) {
-			State st = new State();
-			DFS(st, 0);
-			io.bw.flush();
-			io.bw.write('\n');
+		while(true) {
+			testLoop = Init();
+			if(!testLoop) break;
+			Solve();	
 		}
 	}
 	
-	static boolean Initializing() throws IOException{
-		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		size = nextInt(stk);
-		if(size == 0) return false;
-		A = new int[size];
-		for(int i = 0; i < size; i++) A[i] = nextInt(stk);
+	static boolean Init() throws IOException {
+		StringTokenizer stk =new StringTokenizer(io.inputStr());
+		sb = new StringBuilder();
+		K = nextInt(stk);
+		list.clear();
+		if(K == 0) return false;
+		while(stk.hasMoreTokens()) list.add(nextInt(stk));
+		Collections.sort(list);
 		return true;
 	}
+	static void Solve() throws IOException {
+		DFS(-1,0);
+		System.out.print(sb.toString());
+		System.out.println();
+	}
 	
-	static void DFS(State s,int curIdx) throws IOException{
-		if(s.sp == LOTTO) {
-			io.write(s.toString());
+	private static int temp;
+	static void DFS(int here, int count) throws IOException {
+		if(count == N) {
+			for (int i = 0; i < output.length; i++) {sb.append(output[i]); sb.append(' ');}
+			sb.append('\n');
 			return;
 		}
-		
-		for(int i = curIdx; i < size; i++) {
-			s.Select(i);
-			DFS(s,i+1);
-			s.sp--;
+		for (int i = here+1; i < list.size(); i++) {
+			temp = list.get(i);
+			output[count] = temp;
+			DFS(i,count+1);
 		}
 	}
 
-	static class State {
-		int[] storage;
-		int sp;
-		
-		public State() {
-			super();
-			this.storage = new int[LOTTO];
-			this.sp = 0;
-		}
-		
-		public void Select(int idx) {
-			storage[sp] = A[idx];
-			sp++;
-		}
-		
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			for(int i = 0 ; i < sp; i++) {
-				sb.append(storage[i]);
-				sb.append(' ');
-			}
-			sb.append('\n');
-			return sb.toString();
-		}
-		
-	}
-	
+
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf(arr[i][j]+" ");
+			}
+			System.out.println();
 		}
 	}
-	
 }
 
 
-
-
-
-
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
