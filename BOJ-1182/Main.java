@@ -4,85 +4,88 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int INF = Integer.MAX_VALUE;
-	static int N,S;
-	static int[] A;
-	static ArrayList<Integer> v1 = new ArrayList<Integer>();
-	static ArrayList<Integer> v2 = new ArrayList<Integer>();
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+
+	static int N,S,ans;
+	static int[] arr;
+
+	
 	public static void main(String[] args) throws IOException {
 		Init();
-		DFS(-1, 0, N, v1);
-		Collections.sort(v1);
-		if(N == 1) {
-			if(A[0] == S) System.out.println(1);
-			else System.out.println(0);
-		}
-		else {
-			System.out.println(Upper_Bound(v1, S)-Lower_Bound(v1, S));
-		}
-		
+		Solve(0,NINF,true);
+		System.out.println(ans);
 	}
-
-	static void Init() throws IOException{
+	
+	static void Init() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		N = nextInt(stk);
 		S = nextInt(stk);
-		A = new int[N];
 		stk = new StringTokenizer(io.inputStr());
-		for(int i = 0; i < N; i++) A[i] = nextInt(stk);
+		arr = new int[N];
+		int i = 0;
+		while(stk.hasMoreTokens()) arr[i++] = nextInt(stk);
 	}
-	
-	static void DFS(int cur,int sum, int limit, ArrayList<Integer> v) {
-		if(cur == limit) return;
-		
-		for(int i = cur+1; i < limit; i++) {
-			DFS(i,sum+A[i],limit,v1);
-			v.add(sum+A[i]);
+	static void Solve(int here,int sum,boolean changed) throws IOException {
+		if(changed && sum == S) ans++;
+		if(here == N) return;
+		if(sum == NINF) {
+			Solve(here+1,NINF,false);
+			Solve(here+1,arr[here],true);
+		}
+		else {
+			Solve(here+1,sum,false);
+			Solve(here+1,sum+arr[here],true);
 		}
 	}
 	
-	static int Lower_Bound(ArrayList<Integer> a, int target) {
-		int low=0,high=a.size()-1,mid = 0;
-		while(low < high) {
-			mid = (low+high)/2;
-			if(a.get(mid) < target) low = mid+1;
-			else high = mid;
-		}
-		if(a.get(high) != target) return Integer.MAX_VALUE;
-		else return high;
-	}
-	static int Upper_Bound(ArrayList<Integer> a, int target) {
-		int low=0,high=a.size()-1,mid = 0;
-		while(low < high) {
-			mid = (low+high)/2;
-			if(a.get(mid) <= target) low = mid+1;
-			else high = mid;
-		}
-		if(a.get(high) == target) return high+1;
-		else if(high-1 < 0) return Integer.MAX_VALUE;
-		else if(a.get(high-1) != target) return Integer.MAX_VALUE;
-		return high;
-	}
+	
 
-	
+
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf(arr[i][j]+" ");
+			}
+			System.out.println();
+		}
 	}
 }
 
 
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
