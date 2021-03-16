@@ -5,60 +5,87 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.StringTokenizer;
 
-
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static int SIZE,TARGET,COUNT = 99999999;
-	static int[] A;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+
+	static int N,M;
+	static int[] arr;
+
+	
 	public static void main(String[] args) throws IOException {
-		Initializing();
-		int start=0,end=0,sum = 0;
-		
-		// start(inclusive) , end (exclusive)
-		while(true) {
-			if (sum >= TARGET) sum -= A[start++];
-			else if( end == SIZE) break;
-			else sum += A[end++];
-			if(sum >= TARGET) {
-				int len = end-start;
-				if(len < COUNT) COUNT = len;
-			}
-		}	
-		if(COUNT == 99999999) System.out.println(0);
-		else System.out.println(COUNT);
+		Init();
+		System.out.println(Solve());
 	}
 	
-	static void Initializing() throws IOException{
+	static void Init() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
-		SIZE = nextInt(stk);
-		TARGET = nextInt(stk);
+		N = nextInt(stk);
+		M = nextInt(stk);
+		arr = new int[N];
 		stk = new StringTokenizer(io.inputStr());
-		A = new int[SIZE];
-		for(int i = 0; i < SIZE; i++) A[i] = nextInt(stk);
+		for (int i = 0; stk.hasMoreTokens(); i++) arr[i] = nextInt(stk); 	
+		
 	}
+	static int Solve() throws IOException {
+		int ret = INF;
+		int i=0,j=0,sum=0;
+		while(true) {
+			if(sum < M && j < N) sum += arr[j++];
+			else if(sum >= M && i < j) {
+				ret = Min(ret,j-i);
+				sum -= arr[i++];
+			}
+			
+			if(j == N && sum < M) break;
+		}
+		if(ret == INF) return 0;
+		else return ret;
+	}
+	
+	
 
+
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf(arr[i][j]+" ");
+			}
+			System.out.println();
 		}
 	}
 }
 
 
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
