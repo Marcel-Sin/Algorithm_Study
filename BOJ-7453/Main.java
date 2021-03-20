@@ -6,112 +6,144 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.StringTokenizer;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
-	static final int INF = Integer.MAX_VALUE;
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+
+	
 	static int N;
-	static int SUM;
-	static int[] A,B,C,D;
-	static int[] A1;
-	static int[] A2;
-	static int A1_IDX,A2_IDX;
-	static long c1,c2,COUNTER;
-	static int rest;
+	static int[][] array = new int[4][4000];
+	static int[] r1;
+	static int[] r2;
+
 	public static void main(String[] args) throws IOException {
 		Init();
-		A1_IDX = Array_Sum_Cases(A, B, A1);
-		A2_IDX = Array_Sum_Cases(C, D, A2);
-		Arrays.sort(A1,0,A1_IDX);
-		Arrays.sort(A2,0,A2_IDX);
-		A1[A1_IDX] = Integer.MAX_VALUE;
-		A2[A2_IDX] = Integer.MAX_VALUE;
-		
-		int num = A1[1];
-		int temp;
-		while(true) {
-			rest = 0-num;
-			if(Lower_Bound(A2,A2_IDX,rest) != INF) {
-				c1 = Upper_Bound(A1,A1_IDX,num) - Lower_Bound(A1,A1_IDX,num);
-				c2 = Upper_Bound(A2,A2_IDX,rest) - Lower_Bound(A2,A2_IDX,rest);
-				COUNTER += c1*c2;
-			}
-			temp = Upper_Bound(A1,A1_IDX,num);
-			if(temp == INF) break;
-			else num = A1[temp];
-		}
-		System.out.println(COUNTER);
-		
+		System.out.println(Solve());
 	}
-
-	static void Init() throws IOException{
+	
+	
+	static void Init() throws IOException {
 		N = io.inputInt();
-		A = new int[N];
-		B = new int[N];
-		C = new int[N];
-		D = new int[N];
-		
-		for(int i = 0; i < N; i++) {
+		for (int i = 0; i < N; i++) {
 			StringTokenizer stk = new StringTokenizer(io.inputStr());
-			A[i] = nextInt(stk);
-			B[i] = nextInt(stk);
-			C[i] = nextInt(stk);
-			D[i] = nextInt(stk);
+			for (int j = 0; j < 4; j++) array[j][i] = nextInt(stk);	
 		}
-		
-		int size = N*N+2;
-		A1 = new int[size];
-		A2 = new int[size];
-		A1[0] = Integer.MIN_VALUE;
-		A2[0] = Integer.MIN_VALUE;
+
 	}
-	
-	static int Array_Sum_Cases (int[] a,int[] b,int[] c) {
-		int idx = 1;
-		for(int i = 0; i < N; i++) {
-			for(int j = 0; j < N; j++) {
-				 SUM = a[i]+b[j];
-				 c[idx++] = SUM; 
+	static long Solve() throws IOException {
+		long ret = 0;
+		r1 = new int[N*N+2];
+		r2 = new int[N*N+2];
+		int sum = 0,idxR1=0,idxR2=0;
+		
+		r1[idxR1++] = NINF; r2[idxR2++] = NINF;
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				sum = array[0][i]+array[1][j];
+				r1[idxR1++] = sum;
+				sum = array[2][i]+array[3][j];
+				r2[idxR2++] = sum;
 			}
 		}
-		return idx;
+		r1[idxR1++] = INF; r2[idxR2++] = INF;
+		
+		Arrays.sort(r1,0,idxR1);
+		Arrays.sort(r2,0,idxR2);
+		int idx = 1;
+		long a,b,c,d;
+		boolean error = false;
+		while(idx < idxR1) {
+			// r1에 대한 카운팅
+			a = LowerBound(r1,idxR1,r1[idx]);
+			if(a == -1) break;
+			b = UpperBound(r1,idxR1,r1[idx]);
+			// r2에 대한 카운팅
+			c = LowerBound(r2,idxR2,-r1[idx]);
+			if(c == -1) {idx = (int)b; continue;}
+			d = UpperBound(r2,idxR2,-r1[idx]);
+			ret += (b-a)*(d-c);
+			
+			idx = (int)b;
+		}
+		return ret;
 	}
 	
-	static int Lower_Bound(int[] a, int size,int target) {
-		int s = 1, e = a.length-1, mid;
-		while(s < e) {
-			mid = (s+e)/2;
-			if(a[mid] < target) s = mid+1;
-			else e = mid;
+	
+	
+	// 첫번째 시작지점 반환
+	private static int low,mid,high,value;
+	static int LowerBound(int[] arr,int size, int key) {
+		low = 0;
+		high = size;
+		while(low < high) {
+			mid = (low+high)/2;
+			value = arr[mid];
+			if(value < key) low = mid+1;
+			else high = mid;
 		}
-		if(a[e] == target) return e;
-		else return INF;
+		if(arr[low] == key) return low;
+		else return -1;
 	}
-	static int Upper_Bound(int[] a, int size,int target) {
-		int s = 1, e = a.length-1, mid;
-		while(s < e) {
-			mid = (s+e)/2;
-			if(a[mid] <= target) s = mid+1;
-			else e = mid;
+	// 키보다 큰 시작지점 low 반환
+	static int UpperBound(int[] arr,int size, int key) {
+		low = 0;
+		high = size;
+		while(low < high) {
+			mid = (low+high)/2;
+			value = arr[mid];
+			if(value <= key) low = mid+1;
+			else high = mid;
 		}
-		if(a[e-1] == target) return e;
-		else return INF;
+		if (arr[low-1] == key) return low;
+		else return -1;
 	}
+	
+
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
+	}
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf(arr[i][j]+" ");
+			}
+			System.out.println();
+		}
 	}
 }
 
 
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
