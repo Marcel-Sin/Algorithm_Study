@@ -14,7 +14,11 @@ public class Main {
 	static final int MAX = 1000;
 	
 	static int N,M;
-	static int[] problem;
+	static char[] problem;
+	static boolean[] used;
+	static char[] out;
+	
+	static StringBuilder sb = new StringBuilder();
 	
 	public static void main(String[] args) throws IOException {
 		Init();
@@ -27,43 +31,37 @@ public class Main {
 		N = nextInt(stk);
 		M = nextInt(stk);
 		
-		problem = new int[N];
-		for (int i = 0; i < problem.length; i++) problem[i] = i+1;
+		problem = new char[N];
+		used = new boolean[N];
+		out = new char[M*2];
+		for (int i = 1; i < out.length; i+=2) out[i] = ' ';	
+		out[M*2-1] = '\n';
+		
+		for (int i = 0; i < problem.length; i++) problem[i] = (char)(i+1+'0');
 	}
 	static void Solve() throws IOException {
-		//Reverse(problem,0,N);
-		while(Next_Permutation(problem) == true) {
-			Display(problem, M);
+		sb = new StringBuilder();
+		DFS(0);
+		System.out.print(sb.toString());
+	}
+
+	static void DFS(int count) throws IOException {
+		if(count == M) {
+			sb.append(new String(out));
+			return;
+		}
+		
+		for (int i = 0; i < N; i++) {
+			if(used[i] == false) {
+				used[i] = true;
+				out[count*2] = problem[i];
+				DFS(count+1);
+				used[i] = false;
+			}
 		}
 	}
-	
-	static boolean Next_Permutation(int[] arr) {
-		int size = arr.length;
-		if(size == 1) return false;
-		int i=-1,ii=size-1,j=size-1;
-		while(0 < ii && arr[ii-1] > arr[ii]) ii--; 	
-		if(ii == 0) return false;
-		
-		i = ii-1;
-			while(arr[i] > arr[j]) j--;
-			temp = arr[i];
-			arr[i] = arr[j];
-			arr[j] = temp;
-			Reverse(arr,ii,size);
-			return true;
-		
-	}
-	private static int left,right,temp;
-	static void Reverse(int [] arr,int inStart,int exEnd) {
-		left = inStart;
-		right = exEnd-1;
-		while(left < right) {
-			temp = arr[left];
-			arr[left] = arr[right];
-			arr[right] = temp;
-			left++; right--;
-		}
-	}
+
+
 //	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
