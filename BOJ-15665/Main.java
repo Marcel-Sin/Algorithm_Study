@@ -3,113 +3,112 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
-
 
 public class Main {
 	static IO_Manager io = new IO_Manager();
+	static final int NINF = Integer.MIN_VALUE / 2;
+	static final int INF = Integer.MAX_VALUE / 2;
+	static final int MAX = 1000;
+	
 	static int N,M;
-	static int[] A;
+	static int[] problem;
+	static boolean[] used;
+	
+	static StringBuilder sb = new StringBuilder();
+	
 	public static void main(String[] args) throws IOException {
-		Initializing();
-		State s = new State();
-		DFS(s);
-		io.close();
+		Init();
+		Solve();
 	}
 	
-	static void Initializing() throws IOException{
+	
+	static void Init() throws IOException {
 		StringTokenizer stk = new StringTokenizer(io.inputStr());
 		N = nextInt(stk);
 		M = nextInt(stk);
+		
 		stk = new StringTokenizer(io.inputStr());
-		SortedSet<Integer> temp = new TreeSet<Integer>();
-		for (int i = 0; i < N; i++) temp.add(nextInt(stk));
-		A = new int[temp.size()];
-		Iterator<Integer> iter = temp.iterator();
-		for (int i = 0; i < A.length; i++) A[i] = iter.next();	
-		N = A.length;
+		
+		HashSet<Integer> set = new HashSet<Integer>();
+		for (int i = 0; i < N; i++) {
+		   set.add(nextInt(stk));
+		}
+		N = set.size();
+		problem = new int[N];
+		Iterator<Integer> iter = set.iterator();
+		for (int i = 0; iter.hasNext(); i++) problem[i] = iter.next();	
+		
 	}
-	
-	static void DFS(State state) throws IOException{
-		if(state.storage_Pointer == M) {
-			io.write(state+"");
+	static void Solve() throws IOException {
+		Arrays.sort(problem);
+		sb = new StringBuilder();
+		DFS(0,0,"");
+		System.out.print(sb.toString());
+
+	}
+
+	static void DFS(int here,int count, String previous_str) throws IOException {
+		if(count == M) {
+			sb.append(previous_str);
+			sb.append(new String());
+			sb.append('\n');
 			return;
 		}
-		int before =  -1;
 		for (int i = 0; i < N; i++) {
-			if(before != A[i]) {
-				state.Select(i);
-				DFS(state);
-				state.storage_Pointer--;
-				before = A[i];
-			}
+					StringBuilder tmp = new StringBuilder();
+					tmp.append(previous_str);
+					tmp.append(problem[i]);
+					tmp.append(' ');
+					DFS(i, count+1, tmp.toString());
 		}
 	}
-	
-	static class State {
-		boolean[] check;
-		int[] storage;
-		int storage_Pointer;
-		public State() {
-			super();
-			storage = new int[M];
-			check = new boolean[N];
-			this.storage_Pointer = 0;
-		}
-		
-		public void Select(int idx) {
-			check[idx] = true;
-			storage[storage_Pointer] = idx;
-			storage_Pointer++;
-		}
-		
-		@Override
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			for(int i = 0; i < M; i++) {
-				sb.append(A[storage[i]]);
-				sb.append(' ');
-			}
-			sb.append('\n');
-			return sb.toString();
-		}
-	}
-		
-		
-		
-	
-	
+
+
+//	===================== ETC functions for PS =====================
 	static int nextInt(StringTokenizer stk) {
 		return Integer.parseInt(stk.nextToken());
 	}
-	static void Swap(int[] a, int i , int j) {
-		int temp = a[i];
-		a[i] = a[j];
-		a[j] =temp;
-	}	
-	static void PartialReverse(int[] a, int start, int end) {
-		int temp;
-		while(end > start) {
-			temp = a[start];
-			a[start++] = a[end];
-			a[end--] = temp;
+	static long Min(long a, long b) {
+		return (a > b) ? b : a;
+	}
+	static long Max(long a, long b) {
+		return (a > b) ? a : b;
+	}
+	static int Min(int a, int b) {
+		return (a > b) ? b : a;
+	}
+	static int Max(int a, int b) {
+		return (a > b) ? a : b;
+	}
+	static double Min(double a, double b) {
+		return (a > b) ? b : a;
+	}
+	static double Max(double a, double b) {
+		return (a > b) ? a : b;
+	}
+	static void Display(int[] arr, int limit) {
+		for (int i = 0; i < limit; i++)
+			System.out.print(arr[i] + " ");
+		System.out.println();
+	}
+	static void Display(int[][] arr, int limit) {
+		for (int i = 0; i < limit; i++) {
+			for (int j = 0; j < limit; j++) {
+				System.out.printf(arr[i][j]+" ");
+			}
+			System.out.println();
 		}
 	}
-	
 }
 
 
-
-
-
-
-// ************************************** //
-// *-------------IO_Manager--------------* //
-// ************************************** //
+//-------------IO_Manager--------------
 class IO_Manager {
 	public BufferedReader br;
 	public BufferedWriter bw;
