@@ -3,8 +3,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -19,133 +18,72 @@ public class Main {
 	}
 	static void Execute() {
 		Main mainObj = new Main();
-		int[] ans = mainObj.solve.solution(new String[] { "frodo", "front", "frost", "frozen", "frame", "kakao" },
-				new String[] { "fro??", "fr???", "fro???", "pro?","????o" });
+		int[] ans = mainObj.solve.solution(new String[] {"frodo", "front", "frost", "frozen", "frame", "kakao"}, new String[] {"fro??", "????o", "fr???", "fro???", "pro?"});
+		// System.out.println(ans);
 		Display(ans, ans.length);
 	}
 
 	// import java.util.*;
 	class Solution {
-		ArrayList<String>[] list = new ArrayList[10001];
-		ArrayList<String>[] rlist = new ArrayList[10001];
-		boolean[] list_Sorted = new boolean[10001];
-		boolean[] rlist_Sorted = new boolean[10001];
-		
-		int[] answer;
-		
+		Node[] root = new Node[10001];
+		Node[] rev_root = new Node[10001];
 		public int[] solution(String[] words, String[] queries) {
-			for(int i = 0; i < list.length; i++) {
-				list[i] = new ArrayList<String>();
-				rlist[i] = new ArrayList<String>();
+			for (int i = 0; i < rev_root.length; i++) {
+				root[i] = new Node();
+				rev_root[i] = new Node();
 			}
-			for(int i = 0; i < words.length; i++) {
-				String word = words[i];
-				int len = word.length();
-				list[len].add(word);
-				rlist[len].add(Get_Reverse_String(word));
+			
+			for (int i = 0; i < words.length; i++) {
+				int len = words[i].length();
+				Insert(0, words[i].toCharArray(), root[len]);
+				Insert(0, Reverse(words[i].toCharArray()), rev_root[len]);
 			}
-			int[] arr = new int[queries.length];
-			for (int i = 0; i < arr.length; i++) {
-				arr[i] = Query(queries[i]);
+			int[] ans = new int[queries.length];
+			for (int i = 0; i < queries.length; i++) {
+				ans[i] = Query(queries[i]);
 			}
-			return arr;
+			return ans;
+		}
+		public int Query(String str) {
+			char[] query = str.toCharArray();
+			if(query[0] == '?') return Find_Count(0,Reverse(query),rev_root[query.length]);
+			else return Find_Count(0,query,root[query.length]);
 		}
 		
-		public int Query(String keyStr) {
-			//접두 탐색(fro??)이 아니면 모두 접미 탐색(??fre)이다.
-			boolean is_Prefix_Type = (keyStr.charAt(0) != '?') ? true:false;
-			
-			StringBuilder sb = new StringBuilder();
-			int len = keyStr.length();
-			if(is_Prefix_Type == false) keyStr = Get_Reverse_String(keyStr); 	
-			
-			for (int i = 0; i < len; i++) {
-				if(keyStr.charAt(i) != '?') sb.append(keyStr.charAt(i));
-				else break;
+		public void Insert(int pos, char[] word, Node parent) {
+			if(pos == word.length) return;
+			Node node = parent.link.getOrDefault(word[pos], null);
+			parent.child_Count++;
+			if(node == null) {
+				node = new Node();
+				parent.link.put(word[pos], node);
 			}
-			int lower = 0, upper = 0;
-			if(is_Prefix_Type == false) {
-				if(rlist_Sorted[len] == false) {	Collections.sort(rlist[len]);	rlist_Sorted[len] = true; }
-				lower = Lower_Bound(rlist[len],sb.toString());
-				if(lower == -1) return 0;
-				upper = Upper_Bound(rlist[len],sb.toString());
-				return upper-lower;
-			}
+			Insert(pos+1,word,node);
+			return;
+		}
+		public int Find_Count(int pos, char[] word, Node parent) {
+			int ret = 0;
+			if(word[pos] == '?') return parent.child_Count;
 			else {
-				if(list_Sorted[len] == false) {	Collections.sort(list[len]);	list_Sorted[len] = true; }
-				lower = Lower_Bound(list[len],sb.toString());
-				if(lower == -1) return 0;
-				upper = Upper_Bound(list[len],sb.toString());
-				return upper-lower;
+				Node node = parent.link.getOrDefault(word[pos], null);
+				if(node != null) return Find_Count(pos+1, word, node);
+				else return 0;
 			}
 		}
-		
-		public int Lower_Bound(ArrayList<String> list, String keyStr) {
-			int list_Size = list.size();
-			int low = 0, high = list_Size, mid, compare;
-			
-			while(low < high) {
-				mid = (low+high)/2;
-				String midStr = list.get(mid);
-				compare = Compare_String(keyStr, midStr);
-				if(compare <= 0) high = mid;
-				else low = mid+1;
-			}
-			//Over Check
-			if(low == list_Size) return -1;
-			//Check
-			String lowStr = list.get(low);
-			for (int i = 0; i < keyStr.length(); i++) {
-				if(keyStr.charAt(i) != lowStr.charAt(i)) return -1;
-			}
-			return low;
-		}
-		public int Upper_Bound(ArrayList<String> list, String keyStr) {
-			int list_Size = list.size();
-			int low = 0, high = list_Size, mid, compare;
-			
-			while(low < high) {
-				mid = (low+high)/2;
-				String midStr = list.get(mid);
-				compare = Compare_String(keyStr, midStr);
-				if(compare < 0) high = mid;
-				else low = mid+1;
-			}
-			//Under Check
-			if(low == 0) return -1;
-			//Check
-			String lowStr = list.get(low-1);
-			for (int i = 0; i < keyStr.length(); i++) {
-				if(keyStr.charAt(i) != lowStr.charAt(i)) return -1;
-			}
-			return low;
-		}
-		
-		int Compare_String(String key, String s) {
-			int len = key.length();
-			for (int i = 0; i < len; i++) {
-				if(key.charAt(i) == s.charAt(i)) continue;
-				else {
-					return (key.charAt(i) < s.charAt(i)) ? -1:1;
-				}
-			}
-			return 0;
-		}
-		
-		String Get_Reverse_String(String str) {
-			char[] arr = str.toCharArray();
+		public char[] Reverse(char[] arr) {
 			int i = 0, j = arr.length-1;
 			while(i < j) {
 				char temp = arr[i];
 				arr[i] = arr[j];
 				arr[j] = temp;
-				i++;
-				j--;
+				i++; j--;
 			}
-			return new String(arr);
+			return arr;
 		}
-		
-	
+		class Node {
+			public int child_Count = 0;
+			public HashMap<Character, Node> link = new HashMap<Character, Node>();
+		}
 		
 	}
 
